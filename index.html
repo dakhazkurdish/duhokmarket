@@ -1,62 +1,529 @@
 <!DOCTYPE html>
 <html lang="ku" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>وێنەیێن ئاهەنگێ 📸</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: right;
-            direction: rtl;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 450px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: right;
-        }
-        h2 { 
-            color: #333; 
-            text-align: right;
-            margin-top: 0;
-        }
-        p { 
-            color: #666; 
-            font-size: 15px; 
-            line-height: 1.6; 
-            text-align: right;
-        }
-        .btn {
-            display: block;
-            background-color: #28a745;
-            color: white;
-            padding: 15px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            text-decoration: none;
-            margin-top: 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern POS System</title>
+  <style>
+    :root {
+      --bg-color: #090d16;
+      --card-bg: #131c31;
+      --accent-color: #6366f1;
+      --accent-hover: #4f46e5;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --border-color: #1e293b;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Navbar */
+    .pos-header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pos-title h1 {
+      font-size: 1.2rem;
+      color: var(--text-main);
+    }
+
+    .pos-title p {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+    }
+
+    .lang-switcher {
+      display: flex;
+      gap: 6px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-sub);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .lang-btn.active {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+    }
+
+    /* Main Layout Grid */
+    .pos-main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      flex-grow: 1;
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      .pos-main {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+      }
+    }
+
+    /* Left Section: Products & Categories */
+    .catalog-section {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      overflow-y: auto;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent-color);
+    }
+
+    .categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .cat-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-sub);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .cat-btn.active {
+      background: var(--accent-color);
+      color: #fff;
+      border-color: var(--accent-color);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 14px;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.2s;
+    }
+
+    .product-card:hover {
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+    }
+
+    .product-img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .product-info h3 {
+      font-size: 0.85rem;
+      margin-bottom: 2px;
+      color: var(--text-main);
+    }
+
+    .product-price {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+
+    /* Right Section: Cart / Order Summary */
+    .cart-section {
+      background-color: var(--card-bg);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    html[dir="rtl"] .cart-section {
+      border-left: none;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .cart-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .cart-items {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .cart-item-details h4 {
+      font-size: 0.85rem;
+      margin-bottom: 2px;
+    }
+
+    .cart-item-details p {
+      font-size: 0.75rem;
+      color: var(--accent-color);
+    }
+
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qty-btn {
+      background: var(--border-color);
+      border: none;
+      color: #fff;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .cart-summary {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0,0,0,0.1);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .summary-row.total {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+
+    .checkout-btn {
+      background: var(--success);
+      border: none;
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+
+    .checkout-btn:hover {
+      opacity: 0.9;
+    }
+
+    .empty-cart {
+      text-align: center;
+      color: var(--text-sub);
+      margin-top: 40px;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>بەخێربێن بۆ ئاهەنگێ 🥳</h2>
-    <p>بۆ بەلاڤکرنا وێنەیێن خۆ، کلیلێ ل سەر دوگمایا خوارێ بکە دا کو ڕاستەوخۆ کامیرە ڤەببیت و وێنە بچنە د ناڤ ئەلبۆما ئاهەنگێ دا!</p>
+  <!-- Top Bar -->
+  <header class="pos-header">
+    <div class="pos-title">
+      <h1 id="sys-title">سیستەمێ فرۆتنێ (POS)</h1>
+      <p id="sys-subtitle">هۆتێل و رێستۆرانت - مۆدێلا نوی</p>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="changeLang('bad', this)">بادینی</button>
+      <button class="lang-btn" onclick="changeLang('sor', this)">سۆرانی</button>
+      <button class="lang-btn" onclick="changeLang('en', this)">English</button>
+    </div>
+  </header>
 
-    <!-- لینکێ تە یێ Google Drive لێرە د دێرا 39 دا هاتیە دانان -->
-    <a href="https://drive.google.com/drive/folders/14_7xu9LILmOfSVXZtKjhO1gmFlYjv96F?usp=sharing" class="btn">ڤەکرنا کامیرەی و بارکرنا وێنان 📸</a>
-</div>
+  <!-- Main Section -->
+  <div class="pos-main">
+    
+    <!-- Left: Catalog & Search -->
+    <div class="catalog-section">
+      <input type="text" id="search-box" class="search-box" placeholder="لێگەڕیان ل دۆر بەرهەمان..." onkeyup="renderCatalog()" />
+      
+      <div class="categories" id="cat-list"></div>
+      
+      <div class="products-grid" id="products-grid"></div>
+    </div>
 
+    <!-- Right: Cart & Payment -->
+    <div class="cart-section">
+      <div class="cart-header" id="cart-header-text">سەبەتەیا داواکاریان</div>
+      
+      <div class="cart-items" id="cart-items">
+        <div class="empty-cart" id="empty-msg">سەبەتە ڤالا یە</div>
+      </div>
+
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span id="label-subtotal">کوژمێ گشتی:</span>
+          <span id="subtotal-val">0 IQD</span>
+        </div>
+        <div class="summary-row total">
+          <span id="label-total">پێدڤی ب دانانێ:</span>
+          <span id="total-val">0 IQD</span>
+        </div>
+        <button class="checkout-btn" id="checkout-btn" onclick="checkout()">تەواوکرنا پارەدانێ</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentLang = localStorage.getItem('pos_lang') || 'bad';
+    let activeCatIndex = 0;
+    let cart = [];
+
+    const translations = {
+      bad: {
+        title: 'سیستەمێ فرۆتنێ (POS)',
+        subtitle: 'هۆتێل و رێستۆرانت - مۆدێلا نوی',
+        searchPh: 'لێگەڕیان ل دۆر بەرهەمان...',
+        cartTitle: 'سەبەتەیا داواکاریان',
+        emptyCart: 'سەبەتە ڤالا یە',
+        subtotal: 'کوژمێ گشتی:',
+        total: 'پێدڤی ب دانانێ:',
+        checkoutBtn: 'تەواوکرنا پارەدانێ',
+        successMsg: 'داواکاری ب سەرکەفتن هاتە وەرگرتن! کۆژمێ گشتی: ',
+        cats: ['هەمی', 'خوارنێن سەرەکی', 'ڤەخوارن', 'شێریناهی', 'ژوور']
+      },
+      sor: {
+        title: 'سیستەمی فرۆشتن (POS)',
+        subtitle: 'هۆتێل و رێستۆرانت - مۆدێلی نوێ',
+        searchPh: 'گەڕان بەدوای بەرهەمەکان...',
+        cartTitle: 'سەبەتەی داواکاریکان',
+        emptyCart: 'سەبەتە بەتالە',
+        subtotal: 'کۆی گشتی:',
+        total: 'کۆی گشتی بۆ پارەدان:',
+        checkoutBtn: 'تەواوکردنی پارەدان',
+        successMsg: 'داواکاری بە سەرکەوتوویی وەرگیرا! کۆی گشتی: ',
+        cats: ['هەموو', 'خواردنی سەرەکی', 'خواردنەوەکان', 'شیرینی', 'ژوور']
+      },
+      en: {
+        title: 'POS System',
+        subtitle: 'Hotel & Restaurant - Modern',
+        searchPh: 'Search products...',
+        cartTitle: 'Order Cart',
+        emptyCart: 'Cart is empty',
+        subtotal: 'Subtotal:',
+        total: 'Total:',
+        checkoutBtn: 'Checkout',
+        successMsg: 'Order placed successfully! Total: ',
+        cats: ['All', 'Main Dishes', 'Drinks', 'Desserts', 'Rooms']
+      }
+    };
+
+    const products = [
+      { id: 1, cat: 1, title: 'کەبابێ تایبەت', price: 14000, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=300&q=80' },
+      { id: 2, cat: 1, title: 'پیتزا مەرگەریتا', price: 10000, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=300&q=80' },
+      { id: 3, cat: 2, title: 'کاپوچینۆ', price: 4000, img: 'https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=300&q=80' },
+      { id: 4, cat: 2, title: 'فریش ئۆرانج', price: 5000, img: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=300&q=80' },
+      { id: 5, cat: 3, title: 'کێکا شوکولاتێ', price: 5000, img: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=300&q=80' },
+      { id: 6, cat: 4, title: 'ژوورا تاک', price: 45000, img: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=300&q=80' },
+      { id: 7, cat: 4, title: 'ژوورا جووت', price: 70000, img: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=300&q=80' }
+    ];
+
+    function renderPOS() {
+      const t = translations[currentLang];
+      document.documentElement.dir = (currentLang === 'en') ? 'ltr' : 'rtl';
+
+      document.getElementById('sys-title').innerText = t.title;
+      document.getElementById('sys-subtitle').innerText = t.subtitle;
+      document.getElementById('search-box').placeholder = t.searchPh;
+      document.getElementById('cart-header-text').innerText = t.cartTitle;
+      document.getElementById('label-subtotal').innerText = t.subtotal;
+      document.getElementById('label-total').innerText = t.total;
+      document.getElementById('checkout-btn').innerText = t.checkoutBtn;
+
+      // Render Categories
+      const catContainer = document.getElementById('cat-list');
+      catContainer.innerHTML = t.cats.map((c, i) => 
+        `<button class="cat-btn ${i === activeCatIndex ? 'active' : ''}" onclick="selectCategory(${i})">${c}</button>`
+      ).join('');
+
+      renderCatalog();
+      renderCart();
+    }
+
+    function renderCatalog() {
+      const t = translations[currentLang];
+      let filtered = activeCatIndex === 0 
+        ? products 
+        : products.filter(p => p.cat === activeCatIndex);
+
+      let query = document.getElementById('search-box').value.toLowerCase();
+      if (query.trim() !== '') {
+        filtered = filtered.filter(p => p.title.toLowerCase().includes(query));
+      }
+
+      const grid = document.getElementById('products-grid');
+      grid.innerHTML = filtered.map(p => `
+        <div class="product-card" onclick="addToCart(${p.id})">
+          <img src="${p.img}" class="product-img" alt="${p.title}">
+          <div class="product-info">
+            <h3>${p.title}</h3>
+            <div class="product-price">${p.price.toLocaleString()} IQD</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectCategory(index) {
+      activeCatIndex = index;
+      renderPOS();
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) {
+          cart = cart.filter(i => i.id !== id);
+        }
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const t = translations[currentLang];
+      const container = document.getElementById('cart-items');
+      
+      if (cart.length === 0) {
+        container.innerHTML = `<div class="empty-cart">${t.emptyCart}</div>`;
+        document.getElementById('subtotal-val').innerText = '0 IQD';
+        document.getElementById('total-val').innerText = '0 IQD';
+        return;
+      }
+
+      container.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <div class="cart-item-details">
+            <h4>${item.title}</h4>
+            <p>${(item.price * item.qty).toLocaleString()} IQD</p>
+          </div>
+          <div class="cart-item-actions">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+          </div>
+        </div>
+      `).join('');
+
+      let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      document.getElementById('subtotal-val').innerText = total.toLocaleString() + ' IQD';
+      document.getElementById('total-val').innerText = total.toLocaleString() + ' IQD';
+    }
+
+    function changeLang(lang, el) {
+      currentLang = lang;
+      localStorage.setItem('pos_lang', lang);
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      if(el) {
+        el.classList.add('active');
+      } else {
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+          if(btn.getAttribute('onclick').includes(lang)) btn.classList.add('active');
+        });
+      }
+      renderPOS();
+    }
+
+    function checkout() {
+      if (cart.length === 0) return;
+      let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      alert(translations[currentLang].successMsg + total.toLocaleString() + ' IQD');
+      cart = [];
+      renderCart();
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      changeLang(currentLang, null);
+    });
+  </script>
 </body>
 </html>
