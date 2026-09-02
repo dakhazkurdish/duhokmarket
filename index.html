@@ -6,7 +6,7 @@
     <title>سیستەمێ کاشێریێ یێ پێشکەفتی</title>
     <!-- HTML5 QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- JsBarcode Library for Barcode Sticker Generation -->
+    <!-- JsBarcode Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <style>
         :root {
@@ -35,7 +35,7 @@
         #app-container { display: flex; width: 100%; height: 100vh; }
         .sidebar { width: 280px; background: var(--card-bg); backdrop-filter: blur(12px); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
         .sidebar-top h2 { font-size: 20px; color: var(--accent-color); margin-bottom: 25px; text-align: center; }
-        .nav-btn { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 12px 14px; font-size: 15px; border-radius: 12px; cursor: pointer; text-align: right; margin-bottom: 8px; transition: 0.3s; }
+        .nav-btn { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 12px 14px; font-size: 15px; border-radius: 12px; cursor: pointer; text-align: right; margin-bottom: 8px; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
         .nav-btn:hover, .nav-btn.active { background: var(--accent-color); color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
 
         .rate-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-top: 15px; }
@@ -72,7 +72,7 @@
         .cart-items { flex: 1; overflow-y: auto; margin-top: 10px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(15, 23, 42, 0.4); border-radius: 10px; margin-bottom: 8px; }
         .btn-qty { background: var(--accent-color); color: white; border: none; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; }
-        .btn-clear-cart { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 5px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .btn-clear-cart { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 5px 8px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 
         .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
         .btn-checkout { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
@@ -81,7 +81,7 @@
         .payment-calc { background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border); }
         .payment-calc input, .payment-calc select { width: 100%; padding: 7px; margin-top: 4px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
-        /* Admin UI */
+        /* Admin & General UI */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: 14px; }
         .filter-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 14px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
@@ -89,7 +89,7 @@
 
         .admin-flex { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
         table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
-        th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th, td { padding: 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { background: rgba(15, 23, 42, 0.8); }
 
         .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; margin-left: 2px; }
@@ -98,9 +98,9 @@
         .btn-sec { background: var(--accent-color); }
         .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
 
-        .form-control { margin-bottom: 10px; }
-        .form-control label { display: block; margin-bottom: 3px; font-size: 13px; }
-        .form-control input, .form-control select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; }
+        .form-control { margin-bottom: 12px; }
+        .form-control label { display: block; margin-bottom: 4px; font-size: 13px; }
+        .form-control input, .form-control select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; outline: none; }
         .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 12px; padding: 12px; margin-bottom: 20px; }
         .backup-card { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 20px; display: flex; gap: 10px; align-items: center; }
 
@@ -118,7 +118,7 @@
             width: 100%;
         }
 
-        /* Standard Receipt Printing */
+        /* Printing */
         @media print {
             body { background: white !important; color: black !important; }
             body * { visibility: hidden; }
@@ -126,7 +126,6 @@
             #receipt-print { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 5mm; color: black; font-family: monospace; }
         }
 
-        /* Barcode Sticker Printing */
         @media print {
             body.printing-barcode * {
                 visibility: hidden !important;
@@ -171,8 +170,11 @@
         <div class="sidebar">
             <div class="sidebar-top">
                 <h2>سیستەمێ کاشێریێ</h2>
-                <button class="nav-btn active" onclick="switchTab('pos')">پشکا کاشێری (POS)</button>
-                <button class="nav-btn" onclick="checkAdmin()">پشکا رێڤەبەری (Dashboard)</button>
+                <button class="nav-btn active" onclick="switchTab('pos')"><span>پشکا کاشێری (POS)</span> 🛒</button>
+                <!-- DEBT TAB UNDER CASHIER & ADMIN -->
+                <button class="nav-btn" onclick="switchTab('debts')"><span>لیستا قەرزان</span> 📝</button>
+                <button class="nav-btn" onclick="checkAdmin()"><span>پشکا رێڤەبەری</span> 📊</button>
+                <button class="nav-btn" onclick="switchTab('settings')"><span>رێکخستن (Settings)</span> ⚙️</button>
             </div>
             <div>
                 <div class="rate-card">
@@ -184,7 +186,7 @@
         </div>
 
         <div class="main-content">
-            <!-- POS TAB -->
+            <!-- 1. POS TAB -->
             <div id="pos-tab" class="section active">
                 <div class="pos-grid">
                     <div class="products-section">
@@ -241,7 +243,32 @@
                 </div>
             </div>
 
-            <!-- ADMIN TAB -->
+            <!-- 2. DEBTS TAB -->
+            <div id="debts-tab" class="section">
+                <h2>رێڤەبرنا قەرزان</h2>
+                <br>
+                <div style="background: var(--card-bg); padding: 20px; border-radius: 14px; border: 1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <input type="text" id="debt-search" placeholder="لێگەڕیان ب ناڤێ قەرزداری..." oninput="renderDebts()" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-color); color:white; width: 280px;">
+                        <button class="btn-excel" onclick="exportDebtsToExcel()">📊 دەرهێنانا قەرزان بۆ Excel</button>
+                    </div>
+                    <br>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>کریار</th>
+                                <th>بڕێ قەرزی</th>
+                                <th>بەروار</th>
+                                <th>بارودۆخ</th>
+                                <th>کردار</th>
+                            </tr>
+                        </thead>
+                        <tbody id="debts-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. ADMIN TAB -->
             <div id="admin-tab" class="section">
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
@@ -274,30 +301,6 @@
                 <div class="warning-box" id="low-stock-box" style="display:none;">
                     <h3 style="color:var(--warning);">⚠️ ئاگەهداری: کەلاپەلێن بەر ب کێمبوونێ دچن (ژ ٥ دانەیان کێمتر)</h3>
                     <ul id="low-stock-list" style="margin-right:20px; margin-top:8px;"></ul>
-                </div>
-
-                <!-- DEBTS -->
-                <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3>لیستا قەرزداران</h3>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="debt-search" placeholder="لێگەڕیان ب ناڤێ قەرزداری..." oninput="renderDebts()" style="padding:6px; border-radius:6px; border:1px solid var(--border); background:var(--bg-color); color:white;">
-                            <button class="btn-excel" onclick="exportDebtsToExcel()">📊 Excel قەرزان</button>
-                        </div>
-                    </div>
-                    <br>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>کریار</th>
-                                <th>بڕێ قەرزی</th>
-                                <th>بەروار</th>
-                                <th>بارودۆخ</th>
-                                <th>کردار</th>
-                            </tr>
-                        </thead>
-                        <tbody id="debts-table-body"></tbody>
-                    </table>
                 </div>
 
                 <!-- PRODUCTS & INVENTORY -->
@@ -375,6 +378,31 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 4. SETTINGS TAB -->
+            <div id="settings-tab" class="section">
+                <h2>رێکخستنێن سیستەمی</h2>
+                <br>
+                <div style="max-width: 500px; background: var(--card-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--border);">
+                    <h3>گوهۆڕینا زانیاریێن چوونەژوورێ و رێڤەبەری</h3>
+                    <br>
+                    <form onsubmit="saveSettings(event)">
+                        <div class="form-control">
+                            <label>ناڤێ بەکارهێنەرێ چوونەژوورێ (Login Username):</label>
+                            <input type="text" id="setting-user" required>
+                        </div>
+                        <div class="form-control">
+                            <label>پەیڤا نهێنی یا چوونەژوورێ (Login Password):</label>
+                            <input type="password" id="setting-pass" required>
+                        </div>
+                        <div class="form-control">
+                            <label>پەیڤا نهێنی یا رێڤەبەریێ (Admin Password):</label>
+                            <input type="password" id="setting-admin-pass" required>
+                        </div>
+                        <button type="submit" class="btn-checkout">تۆمارکرنا گوهۆڕینان 💾</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -419,6 +447,7 @@
     <script>
         let storedUser = localStorage.getItem('app_username') || "admin";
         let storedPass = localStorage.getItem('app_password') || "1234";
+        let adminPass = localStorage.getItem('app_admin_password') || "1234";
 
         let invoiceCounter = parseInt(localStorage.getItem('invoice_counter')) || 1;
         let selectedCategory = "هەموو";
@@ -437,7 +466,8 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F2') {
                 e.preventDefault();
-                document.getElementById('search-input').focus();
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) searchInput.focus();
             }
             if (e.code === 'Space' && cart.length > 0 && !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
                 e.preventDefault();
@@ -478,13 +508,37 @@
             document.getElementById('app-container').style.display = 'flex';
             renderCategories();
             renderProducts();
+            loadSettings();
         }
 
         function logout() { sessionStorage.removeItem('isLoggedIn'); location.reload(); }
 
         function checkAdmin() {
-            if (prompt("پەیڤا نهێنی بنڤێسە:") === storedPass) switchTab('admin');
-            else alert("پەیڤا نهێنی شاشە!");
+            if (prompt("پەیڤا نهێنی یا رێڤەبەری بنڤێسە:") === adminPass) {
+                switchTab('admin');
+            } else {
+                alert("پەیڤا نهێنی شاشە!");
+            }
+        }
+
+        // SETTINGS HANDLER
+        function loadSettings() {
+            document.getElementById('setting-user').value = storedUser;
+            document.getElementById('setting-pass').value = storedPass;
+            document.getElementById('setting-admin-pass').value = adminPass;
+        }
+
+        function saveSettings(e) {
+            e.preventDefault();
+            storedUser = document.getElementById('setting-user').value.trim();
+            storedPass = document.getElementById('setting-pass').value.trim();
+            adminPass = document.getElementById('setting-admin-pass').value.trim();
+
+            localStorage.setItem('app_username', storedUser);
+            localStorage.setItem('app_password', storedPass);
+            localStorage.setItem('app_admin_password', adminPass);
+
+            alert("پەیڤێن نهێنی و زانیاری ب سەرکەفتیانە هاتنە گوهۆڕین!");
         }
 
         function renderCategories() {
@@ -628,6 +682,7 @@
         function updateAllDisplays() {
             renderProducts();
             updateCart();
+            renderDebts();
             if (document.getElementById('admin-tab').classList.contains('active')) {
                 updateAdminStats();
             }
@@ -696,12 +751,12 @@
             if (isDebt) {
                 debts.push({ id: Date.now(), customer: customerName, amountIQD: finalTotalIQD, date: new Date().toLocaleString(), status: 'Unpaid' });
                 localStorage.setItem('debts_db', JSON.stringify(debts));
+                renderDebts();
             }
 
             localStorage.setItem('products_db', JSON.stringify(products));
             localStorage.setItem('sales_db', JSON.stringify(salesHistory));
 
-            // Populate Invoice
             document.getElementById('receipt-invoice-num').innerText = "پسۆلە: " + formattedInvoiceNum;
             document.getElementById('receipt-date').innerText = new Date().toLocaleString();
             document.getElementById('receipt-items').innerHTML = receiptHTML;
@@ -767,7 +822,6 @@
             document.getElementById('total-debts').innerText = formatPrice(totalDebtSum);
 
             checkLowStock();
-            renderDebts();
 
             const tbody = document.getElementById('admin-products-body');
             tbody.innerHTML = '';
@@ -802,9 +856,11 @@
             }
         }
 
+        // DEBTS RENDER
         function renderDebts() {
             const searchVal = document.getElementById('debt-search') ? document.getElementById('debt-search').value.toLowerCase() : '';
             const tbody = document.getElementById('debts-table-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             debts.filter(d => d.customer.toLowerCase().includes(searchVal)).forEach(d => {
@@ -815,15 +871,15 @@
 
                 tbody.innerHTML += `
                     <tr>
-                        <td>${d.customer}</td>
-                        <td>${formatPrice(currentAmount)}</td>
+                        <td><strong>${d.customer}</strong></td>
+                        <td style="color:var(--warning); font-weight:bold;">${formatPrice(currentAmount)}</td>
                         <td>${d.date}</td>
-                        <td>${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</td>
+                        <td><span style="padding: 3px 8px; border-radius: 6px; font-size:11px; background:${d.status === 'Paid' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color:${d.status === 'Paid' ? 'var(--success)' : 'var(--danger)'}">${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</span></td>
                         <td>
                             ${d.status === 'Unpaid' ? `
                                 <button class="btn-action btn-sec" onclick="payPartialDebt(${d.id})">دان ب بەشەکی</button>
                                 <button class="btn-action btn-edit" onclick="payFullDebt(${d.id})">تەمام</button>
-                            ` : '✔️'}
+                            ` : '✔️ تەمام'}
                         </td>
                     </tr>
                 `;
@@ -842,7 +898,8 @@
                     d.amountIQD -= payInIQD;
                     if (d.amountIQD <= 0) d.status = 'Paid';
                     localStorage.setItem('debts_db', JSON.stringify(debts));
-                    updateAdminStats();
+                    renderDebts();
+                    if (document.getElementById('admin-tab').classList.contains('active')) updateAdminStats();
                 }
             }
         }
@@ -853,11 +910,12 @@
                 d.amountIQD = 0; 
                 d.status = 'Paid'; 
                 localStorage.setItem('debts_db', JSON.stringify(debts)); 
-                updateAdminStats(); 
+                renderDebts();
+                if (document.getElementById('admin-tab').classList.contains('active')) updateAdminStats();
             }
         }
 
-        // BARCODE STICKER MODAL & PRINT
+        // BARCODE STICKER
         function openBarcodeModal(barcode) {
             const product = products.find(p => p.barcode === barcode);
             if (!product) return;
@@ -889,7 +947,7 @@
             }, 500);
         }
 
-        // EDIT & SAVE PRODUCT
+        // PRODUCT MANAGEMENT
         function editProduct(barcode) {
             const p = products.find(prod => prod.barcode === barcode);
             if (!p) return;
@@ -996,7 +1054,7 @@
 
         // BACKUP & RESTORE JSON
         function exportBackupJSON() {
-            const data = { products, salesHistory, debts, invoiceCounter };
+            const data = { products, salesHistory, debts, invoiceCounter, storedUser, storedPass, adminPass };
             const jsonStr = JSON.stringify(data, null, 2);
             const blob = new Blob([jsonStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
@@ -1018,6 +1076,9 @@
                         salesHistory = data.salesHistory;
                         debts = data.debts;
                         if (data.invoiceCounter) invoiceCounter = data.invoiceCounter;
+                        if (data.storedUser) localStorage.setItem('app_username', data.storedUser);
+                        if (data.storedPass) localStorage.setItem('app_password', data.storedPass);
+                        if (data.adminPass) localStorage.setItem('app_admin_password', data.adminPass);
 
                         localStorage.setItem('products_db', JSON.stringify(products));
                         localStorage.setItem('sales_db', JSON.stringify(salesHistory));
@@ -1035,13 +1096,22 @@
         function switchTab(tab) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
             if (tab === 'pos') {
                 document.getElementById('pos-tab').classList.add('active');
                 document.querySelectorAll('.nav-btn')[0].classList.add('active');
-            } else {
-                document.getElementById('admin-tab').classList.add('active');
+            } else if (tab === 'debts') {
+                document.getElementById('debts-tab').classList.add('active');
                 document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                renderDebts();
+            } else if (tab === 'admin') {
+                document.getElementById('admin-tab').classList.add('active');
+                document.querySelectorAll('.nav-btn')[2].classList.add('active');
                 updateAdminStats();
+            } else if (tab === 'settings') {
+                document.getElementById('settings-tab').classList.add('active');
+                document.querySelectorAll('.nav-btn')[3].classList.add('active');
+                loadSettings();
             }
         }
 
