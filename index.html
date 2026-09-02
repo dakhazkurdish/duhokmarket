@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستەمێ کاشێریێ یێ پێشکەفتی یێ گشتی</title>
+    <title>سیستەمێ کاشێریێ یێ پێشکەفتی</title>
     <!-- HTML5 QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- JsBarcode Library for Barcode Sticker Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -22,24 +24,22 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
 
-        /* Login Modal */
+        /* Login */
         #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(16px); padding: 35px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; }
-        .login-card h2 { color: var(--accent-color); margin-bottom: 8px; }
-        .login-card input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.8); color: white; margin-top: 5px; margin-bottom: 15px; outline: none; }
+        .login-card h2 { color: var(--accent-color); margin-bottom: 12px; }
+        .login-card input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.8); color: white; margin-bottom: 15px; outline: none; }
         .btn-login { background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* Layout */
+        /* App Shell */
         #app-container { display: flex; width: 100%; height: 100vh; }
         .sidebar { width: 280px; background: var(--card-bg); backdrop-filter: blur(12px); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
         .sidebar-top h2 { font-size: 20px; color: var(--accent-color); margin-bottom: 25px; text-align: center; }
-
         .nav-btn { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 12px 14px; font-size: 15px; border-radius: 12px; cursor: pointer; text-align: right; margin-bottom: 8px; transition: 0.3s; }
         .nav-btn:hover, .nav-btn.active { background: var(--accent-color); color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
 
         .rate-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-top: 15px; }
         .rate-card input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; font-weight: bold; }
-
         .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); }
         .btn-logout:hover { background: var(--danger); color: white; }
 
@@ -52,7 +52,6 @@
         .products-section { display: flex; flex-direction: column; gap: 12px; }
         .search-box { display: flex; gap: 10px; }
         .search-box input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; font-size: 16px; }
-
         .currency-switch { display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); }
         .currency-switch select { background: var(--bg-color); color: white; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-weight: bold; }
 
@@ -63,7 +62,7 @@
         .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 250px); padding-left: 5px; }
         .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
         .product-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
-        .product-card.out-of-stock { opacity: 0.5; border-color: var(--danger); }
+        .product-card.out-of-stock { opacity: 0.4; border-color: var(--danger); pointer-events: none; }
         .product-card.exp-warning { border-color: var(--warning); }
         .product-card h4 { margin-bottom: 4px; font-size: 14px; }
         .product-card .price { color: var(--success); font-weight: bold; font-size: 14px; }
@@ -73,6 +72,7 @@
         .cart-items { flex: 1; overflow-y: auto; margin-top: 10px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(15, 23, 42, 0.4); border-radius: 10px; margin-bottom: 8px; }
         .btn-qty { background: var(--accent-color); color: white; border: none; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; }
+        .btn-clear-cart { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 5px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 
         .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
         .btn-checkout { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
@@ -84,7 +84,6 @@
         /* Admin UI */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: 14px; }
-
         .filter-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 14px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .filter-card input, .filter-card select { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
@@ -93,31 +92,63 @@
         th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { background: rgba(15, 23, 42, 0.8); }
 
-        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; }
+        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; margin-left: 2px; }
         .btn-delete { background: var(--danger); }
-        .btn-edit { background: var(--warning); }
+        .btn-edit { background: var(--warning); color: black; font-weight: bold; }
         .btn-sec { background: var(--accent-color); }
         .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
 
         .form-control { margin-bottom: 10px; }
         .form-control label { display: block; margin-bottom: 3px; font-size: 13px; }
         .form-control input, .form-control select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; }
-
-        /* Low Stock Warning Section */
         .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 12px; padding: 12px; margin-bottom: 20px; }
-
-        /* Backup Controls */
         .backup-card { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 20px; display: flex; gap: 10px; align-items: center; }
 
-        /* Scanner Modal */
-        #scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        /* Modals */
+        #scanner-modal, #barcode-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .scanner-box { background: var(--bg-color); padding: 20px; border-radius: 16px; width: 380px; text-align: center; }
+        
+        .barcode-box {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+        }
 
-        /* Print Style */
+        /* Standard Receipt Printing */
         @media print {
+            body { background: white !important; color: black !important; }
             body * { visibility: hidden; }
             #receipt-print, #receipt-print * { visibility: visible; }
-            #receipt-print { position: absolute; left: 0; top: 0; color: black; background: white; width: 80mm; padding: 5mm; }
+            #receipt-print { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 5mm; color: black; font-family: monospace; }
+        }
+
+        /* Barcode Sticker Printing */
+        @media print {
+            body.printing-barcode * {
+                visibility: hidden !important;
+            }
+            body.printing-barcode #barcode-sticker-print,
+            body.printing-barcode #barcode-sticker-print * {
+                visibility: visible !important;
+            }
+            body.printing-barcode #barcode-sticker-print {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 50mm;
+                height: 30mm;
+                margin: 0;
+                padding: 2mm;
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -127,7 +158,6 @@
     <div id="login-screen">
         <div class="login-card">
             <h2>چوونەژووریا کاشێریێ</h2>
-            <br>
             <form onsubmit="handleLogin(event)">
                 <input type="text" id="login-user" placeholder="ناڤێ بەکارهێنەری" required>
                 <input type="password" id="login-pass" placeholder="پەیڤا نهێنی" required>
@@ -163,7 +193,6 @@
                             <button class="nav-btn" style="width:auto; margin:0;" onclick="openScanner()">📷</button>
                         </div>
                         
-                        <!-- CURRENCY TOGGLE BAR -->
                         <div class="currency-switch">
                             <span style="font-size:13px; font-weight:bold;">دراڤێ دیارکرنێ (Currency):</span>
                             <select id="currency-select" onchange="updateAllDisplays()">
@@ -172,14 +201,15 @@
                             </select>
                         </div>
 
-                        <!-- CATEGORY FILTER BAR -->
                         <div class="cat-bar" id="category-bar"></div>
-
                         <div class="products-cards" id="products-list"></div>
                     </div>
 
                     <div class="cart-panel">
-                        <h3>سەبەتە</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>سەبەتە</h3>
+                            <button class="btn-clear-cart" onclick="clearCart()">بەتاڵکرن 🗑️</button>
+                        </div>
                         <div class="cart-items" id="cart-items"></div>
                     </div>
 
@@ -193,7 +223,7 @@
                                         <option value="percent">% سەدی</option>
                                         <option value="fixed">پارێ نەقدی (Fixed)</option>
                                     </select>
-                                    <input type="number" id="cart-discount-value" value="0" oninput="updateCart()">
+                                    <input type="number" id="cart-discount-value" value="0" min="0" oninput="updateCart()">
                                 </div>
                             </div>
                             <div style="font-weight: bold; margin-top:5px; font-size:16px; color:var(--success);">کۆم: <span id="cart-total-primary">0</span></div>
@@ -216,7 +246,6 @@
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
 
-                <!-- DATE FILTER -->
                 <div class="filter-card">
                     <label>فیلتەرکرنا راپۆرتان ب بەروار:</label>
                     <select id="report-filter-type" onchange="toggleCustomDates()">
@@ -242,13 +271,12 @@
                     <div class="stat-card"><h3>کۆما قەرزان</h3><p id="total-debts" style="color:var(--warning);">0</p></div>
                 </div>
 
-                <!-- LOW STOCK WARNING BOX -->
                 <div class="warning-box" id="low-stock-box" style="display:none;">
                     <h3 style="color:var(--warning);">⚠️ ئاگەهداری: کەلاپەلێن بەر ب کێمبوونێ دچن (ژ ٥ دانەیان کێمتر)</h3>
                     <ul id="low-stock-list" style="margin-right:20px; margin-top:8px;"></ul>
                 </div>
 
-                <!-- DEBT MANAGEMENT -->
+                <!-- DEBTS -->
                 <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <h3>لیستا قەرزداران</h3>
@@ -272,6 +300,7 @@
                     </table>
                 </div>
 
+                <!-- PRODUCTS & INVENTORY -->
                 <div class="admin-flex">
                     <div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -298,6 +327,7 @@
                         <h3 id="form-title">زێدەکرنا کەلاپەلی</h3>
                         <br>
                         <form id="product-form" onsubmit="saveProduct(event)" style="background: var(--card-bg); padding: 15px; border-radius: 12px;">
+                            <input type="hidden" id="edit-mode-index" value="-1">
                             <div class="form-control">
                                 <label>بارکۆد:</label>
                                 <input type="text" id="prod-barcode" required>
@@ -331,10 +361,10 @@
                                 <label>فرۆشتن ب دینار (IQD):</label>
                                 <input type="number" id="prod-price" required placeholder="ملا: 500">
                             </div>
-                            <button type="submit" class="btn-checkout">تۆمارکرن</button>
+                            <button type="submit" id="btn-submit-form" class="btn-checkout">تۆمارکرن</button>
+                            <button type="button" id="btn-cancel-edit" onclick="resetForm()" style="display:none; margin-top:5px; width: 100%;" class="btn-clear-cart">هەلوەشاندن</button>
                         </form>
 
-                        <!-- BACKUP & RESTORE CONTROLS -->
                         <div class="backup-card">
                             <button class="btn-action btn-sec" onclick="exportBackupJSON()">💾 دابەزاندنا Backup</button>
                             <label class="btn-action btn-edit" style="cursor:pointer;">
@@ -357,6 +387,21 @@
         </div>
     </div>
 
+    <!-- BARCODE MODAL -->
+    <div id="barcode-modal">
+        <div class="barcode-box">
+            <div id="barcode-sticker-print">
+                <h4 id="sticker-prod-name" style="margin: 0; font-size: 13px; font-weight: bold;"></h4>
+                <svg id="barcode-svg" style="width: 100%; max-height: 50px;"></svg>
+                <div id="sticker-prod-price" style="font-size: 12px; font-weight: bold; margin-top: 2px;"></div>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 8px; justify-content: center;">
+                <button class="btn-action btn-sec" onclick="printBarcodeSticker()">چاپکرن 🖨️</button>
+                <button class="btn-action btn-delete" onclick="closeBarcodeModal()">داخستن</button>
+            </div>
+        </div>
+    </div>
+
     <!-- PRINT RECEIPT -->
     <div id="receipt-print" style="display: none;">
         <h3 style="text-align: center;">پسۆلا فرۆشتنێ</h3>
@@ -365,10 +410,12 @@
         <hr style="margin: 5px 0;">
         <div id="receipt-items"></div>
         <hr style="margin: 5px 0;">
-        <h4 id="receipt-total"></h4>
+        <p id="receipt-subtotal" style="font-size: 12px;"></p>
+        <p id="receipt-discount" style="font-size: 12px; color: red;"></p>
+        <h4 id="receipt-total" style="margin-top: 5px;"></h4>
     </div>
 
-    <!-- LOGIC -->
+    <!-- SCRIPT -->
     <script>
         let storedUser = localStorage.getItem('app_username') || "admin";
         let storedPass = localStorage.getItem('app_password') || "1234";
@@ -376,7 +423,6 @@
         let invoiceCounter = parseInt(localStorage.getItem('invoice_counter')) || 1;
         let selectedCategory = "هەموو";
 
-        // Stores Prices in IQD natively
         let products = JSON.parse(localStorage.getItem('products_db')) || [
             { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 250, price: 500, stock: 4, expiry: '2026-12-01' },
             { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 500, price: 750, stock: 15, expiry: '2026-09-20' }
@@ -387,13 +433,13 @@
         let debts = JSON.parse(localStorage.getItem('debts_db')) || [];
         let html5QrcodeScanner = null;
 
-        // KEYBOARD SHORTCUTS
+        // SHORTCUTS
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F2') {
                 e.preventDefault();
                 document.getElementById('search-input').focus();
             }
-            if (e.code === 'Space' && cart.length > 0 && document.activeElement.tagName !== 'INPUT') {
+            if (e.code === 'Space' && cart.length > 0 && !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
                 e.preventDefault();
                 checkout(false);
             }
@@ -422,7 +468,9 @@
             if (document.getElementById('login-user').value === storedUser && document.getElementById('login-pass').value === storedPass) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 showApp();
-            } else { alert("زانیاری شاشن!"); }
+            } else { 
+                alert("ناڤێ بەکارهێنەری یان پەیڤا نهێنی شاشە!"); 
+            }
         }
 
         function showApp() {
@@ -436,7 +484,7 @@
 
         function checkAdmin() {
             if (prompt("پەیڤا نهێنی بنڤێسە:") === storedPass) switchTab('admin');
-            else alert("شاشە!");
+            else alert("پەیڤا نهێنی شاشە!");
         }
 
         function renderCategories() {
@@ -476,7 +524,7 @@
                 container.innerHTML += `
                     <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''} ${expWarning ? 'exp-warning' : ''}" onclick="addToCart('${p.barcode}')">
                         <h4>${p.name}</h4>
-                        <div style="font-size:11px; color:var(--text-muted);">${p.stock} دانە</div>
+                        <div style="font-size:11px; color:var(--text-muted);">${isOutOfStock ? 'نەماینە' : p.stock + ' دانە'}</div>
                         <div class="price">${formatPrice(p.price || 0)}</div>
                         ${expWarning ? `<div class="exp-tag">⚠️ نزیک بەسەرچوون</div>` : ''}
                     </div>
@@ -486,13 +534,20 @@
 
         function addToCart(barcode) {
             const product = products.find(p => p.barcode === barcode);
-            if (!product || product.stock <= 0) return alert("مەوجود نینە!");
+            if (!product || product.stock <= 0) return alert("کەلاپەل د عەمبارێ دا نەمایە!");
 
             const exist = cart.find(c => c.barcode === barcode);
             if (exist) {
-                if (exist.qty + 1 > product.stock) return alert("ژ عەمبارێ زێدەترە!");
+                if (exist.qty + 1 > product.stock) return alert("ژ رێژەیا عەمبارێ زێدەتر نابیت!");
                 exist.qty++;
-            } else { cart.push({ ...product, qty: 1 }); }
+            } else { 
+                cart.push({ ...product, qty: 1 }); 
+            }
+            updateCart();
+        }
+
+        function clearCart() {
+            cart = [];
             updateCart();
         }
 
@@ -508,7 +563,7 @@
                         <div><strong>${item.name}</strong><br><small>${formatPrice(item.price || 0)}</small></div>
                         <div>
                             <button class="btn-qty" onclick="changeQty(${index}, -1)">-</button>
-                            <span>${item.qty}</span>
+                            <span style="margin:0 5px;">${item.qty}</span>
                             <button class="btn-qty" onclick="changeQty(${index}, 1)">+</button>
                         </div>
                     </div>
@@ -582,7 +637,11 @@
             const val = document.getElementById('search-input').value.trim().toLowerCase();
             if (e.key === 'Enter' && val !== '') {
                 const matched = products.find(p => p.barcode === val);
-                if (matched) { addToCart(matched.barcode); document.getElementById('search-input').value = ''; return; }
+                if (matched) { 
+                    addToCart(matched.barcode); 
+                    document.getElementById('search-input').value = ''; 
+                    return; 
+                }
             }
             renderProducts(products.filter(p => p.name.toLowerCase().includes(val) || p.barcode.includes(val)));
         }
@@ -602,12 +661,14 @@
             const curr = getCurrentCurrency();
 
             let finalTotalIQD = subtotal;
+            let discountAmountIQD = 0;
+
             if (discountType === 'percent') {
-                finalTotalIQD = Math.max(0, subtotal - (subtotal * discountVal / 100));
+                discountAmountIQD = (subtotal * discountVal / 100);
+                finalTotalIQD = Math.max(0, subtotal - discountAmountIQD);
             } else {
-                let fixedDiscountIQD = discountVal;
-                if (curr === 'USD') fixedDiscountIQD = discountVal * (getExchangeRate() / 100);
-                finalTotalIQD = Math.max(0, subtotal - fixedDiscountIQD);
+                discountAmountIQD = curr === 'USD' ? discountVal * (getExchangeRate() / 100) : discountVal;
+                finalTotalIQD = Math.max(0, subtotal - discountAmountIQD);
             }
 
             const formattedInvoiceNum = "INV-" + String(invoiceCounter).padStart(4, '0');
@@ -626,7 +687,10 @@
                     date: new Date().toISOString()
                 });
 
-                receiptHTML += `<p>${item.name} x${item.qty} - ${formatPrice((item.price || 0) * item.qty)}</p>`;
+                receiptHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>${item.name} x${item.qty}</span>
+                    <span>${formatPrice((item.price || 0) * item.qty)}</span>
+                </div>`;
             });
 
             if (isDebt) {
@@ -637,15 +701,19 @@
             localStorage.setItem('products_db', JSON.stringify(products));
             localStorage.setItem('sales_db', JSON.stringify(salesHistory));
 
-            document.getElementById('receipt-invoice-num').innerText = "ژمارەیا پسۆلێ: " + formattedInvoiceNum;
+            // Populate Invoice
+            document.getElementById('receipt-invoice-num').innerText = "پسۆلە: " + formattedInvoiceNum;
             document.getElementById('receipt-date').innerText = new Date().toLocaleString();
             document.getElementById('receipt-items').innerHTML = receiptHTML;
-            document.getElementById('receipt-total').innerText = "کۆم: " + formatPrice(finalTotalIQD);
+            document.getElementById('receipt-subtotal').innerText = "کۆما گشتی: " + formatPrice(subtotal);
+            document.getElementById('receipt-discount').innerText = discountAmountIQD > 0 ? "داشکان: -" + formatPrice(discountAmountIQD) : "";
+            document.getElementById('receipt-total').innerText = "کۆما دوماهیێ: " + formatPrice(finalTotalIQD);
 
             window.print();
 
             cart = [];
             document.getElementById('paid-amount').value = '';
+            document.getElementById('cart-discount-value').value = '0';
             updateCart();
             renderProducts();
         }
@@ -661,7 +729,6 @@
 
             return salesHistory.filter(s => {
                 const sDate = new Date(s.date);
-
                 if (filterType === 'today') {
                     return sDate.toDateString() === now.toDateString();
                 } else if (filterType === 'month') {
@@ -680,7 +747,6 @@
 
         function updateAdminStats() {
             let filteredSales = filterSalesByDate();
-
             let sales = 0, cost = 0;
             filteredSales.forEach(s => { 
                 sales += (s.price || 0); 
@@ -713,7 +779,11 @@
                         <td>${p.stock}</td>
                         <td>${p.expiry || '-'}</td>
                         <td>${formatPrice(p.price || 0)}</td>
-                        <td><button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button></td>
+                        <td>
+                            <button class="btn-action btn-sec" onclick="openBarcodeModal('${p.barcode}')">🏷️ بارکۆد</button>
+                            <button class="btn-action btn-edit" onclick="editProduct('${p.barcode}')">دەستکاری</button>
+                            <button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button>
+                        </td>
                     </tr>
                 `;
             });
@@ -763,7 +833,7 @@
         function payPartialDebt(id) {
             const d = debts.find(debt => debt.id === id);
             if (d) {
-                let pay = parseFloat(prompt(`بڕێ دانى بنڤێسە (کۆما قەرزی: ${formatPrice(d.amountIQD)}):\n* ب گوێرەی دراڤێ نوکە هەڵبژارتی بنڤێسە.`));
+                let pay = parseFloat(prompt(`بڕێ دانی بنڤێسە (کۆما قەرزی: ${formatPrice(d.amountIQD)}):`));
                 const curr = getCurrentCurrency();
                 let payInIQD = pay;
                 if (curr === 'USD') payInIQD = pay * (getExchangeRate() / 100);
@@ -779,11 +849,78 @@
 
         function payFullDebt(id) {
             const d = debts.find(debt => debt.id === id);
-            if (d) { d.amountIQD = 0; d.status = 'Paid'; localStorage.setItem('debts_db', JSON.stringify(debts)); updateAdminStats(); }
+            if (d) { 
+                d.amountIQD = 0; 
+                d.status = 'Paid'; 
+                localStorage.setItem('debts_db', JSON.stringify(debts)); 
+                updateAdminStats(); 
+            }
+        }
+
+        // BARCODE STICKER MODAL & PRINT
+        function openBarcodeModal(barcode) {
+            const product = products.find(p => p.barcode === barcode);
+            if (!product) return;
+
+            document.getElementById('sticker-prod-name').innerText = product.name;
+            document.getElementById('sticker-prod-price').innerText = "بها: " + formatPrice(product.price || 0);
+
+            JsBarcode("#barcode-svg", product.barcode, {
+                format: "CODE128",
+                width: 1.5,
+                height: 40,
+                displayValue: true,
+                fontSize: 12,
+                margin: 2
+            });
+
+            document.getElementById('barcode-modal').style.display = 'flex';
+        }
+
+        function closeBarcodeModal() {
+            document.getElementById('barcode-modal').style.display = 'none';
+        }
+
+        function printBarcodeSticker() {
+            document.body.classList.add('printing-barcode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('printing-barcode');
+            }, 500);
+        }
+
+        // EDIT & SAVE PRODUCT
+        function editProduct(barcode) {
+            const p = products.find(prod => prod.barcode === barcode);
+            if (!p) return;
+
+            document.getElementById('edit-mode-index').value = barcode;
+            document.getElementById('prod-barcode').value = p.barcode;
+            document.getElementById('prod-barcode').disabled = true;
+            document.getElementById('prod-name').value = p.name;
+            document.getElementById('prod-category').value = p.category;
+            document.getElementById('prod-stock').value = p.stock;
+            document.getElementById('prod-expiry').value = p.expiry || '';
+            document.getElementById('prod-cost').value = p.cost;
+            document.getElementById('prod-price').value = p.price;
+
+            document.getElementById('form-title').innerText = "دەستکاریکرنا کەلاپەلی";
+            document.getElementById('btn-submit-form').innerText = "نویکردنەوە";
+            document.getElementById('btn-cancel-edit').style.display = "block";
+        }
+
+        function resetForm() {
+            document.getElementById('product-form').reset();
+            document.getElementById('edit-mode-index').value = "-1";
+            document.getElementById('prod-barcode').disabled = false;
+            document.getElementById('form-title').innerText = "زێدەکرنا کەلاپەلی";
+            document.getElementById('btn-submit-form').innerText = "تۆمارکرن";
+            document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
         function saveProduct(e) {
             e.preventDefault();
+            const editBarcode = document.getElementById('edit-mode-index').value;
             const barcode = document.getElementById('prod-barcode').value.trim();
             const name = document.getElementById('prod-name').value.trim();
             const category = document.getElementById('prod-category').value;
@@ -792,24 +929,36 @@
             const cost = parseFloat(document.getElementById('prod-cost').value);
             const price = parseFloat(document.getElementById('prod-price').value);
 
-            products.push({ barcode, name, category, stock, expiry, cost, price });
-            localStorage.setItem('products_db', JSON.stringify(products));
+            if (editBarcode === "-1") {
+                if (products.some(p => p.barcode === barcode)) {
+                    return alert("ئەڤ بارکۆدە یێ بەری نوکە هەی! بارکۆدەکێ دی بکاربینە.");
+                }
+                products.push({ barcode, name, category, stock, expiry, cost, price });
+                alert("کەلاپەل ب سەرکەفتیانە هاتە زێدەکرن!");
+            } else {
+                const idx = products.findIndex(p => p.barcode === editBarcode);
+                if (idx !== -1) {
+                    products[idx] = { barcode: editBarcode, name, category, stock, expiry, cost, price };
+                    alert("زانیاری هاتنە نویکردنەوە!");
+                }
+            }
 
-            document.getElementById('product-form').reset();
+            localStorage.setItem('products_db', JSON.stringify(products));
+            resetForm();
             renderCategories();
             renderProducts();
             updateAdminStats();
-            alert("کەلاپەل هاتە زێدەکرن!");
         }
 
         function deleteProduct(barcode) {
+            if (!confirm("تۆ پشتڕاستی ژ سڕینەوەیا ڤی کەلاپەلی؟")) return;
             products = products.filter(p => p.barcode !== barcode);
             localStorage.setItem('products_db', JSON.stringify(products));
             renderProducts();
             updateAdminStats();
         }
 
-        // EXPORT TO EXCEL / CSV FUNCTIONS
+        // CSV EXPORTS
         function downloadCSV(csvContent, fileName) {
             const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
