@@ -40,27 +40,14 @@
             padding: 35px;
             border-radius: 20px;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: center;
         }
 
-        .login-card h2 {
-            color: var(--accent-color);
-            margin-bottom: 8px;
-            font-size: 24px;
-        }
-
-        .login-card p {
-            color: var(--text-muted);
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
-
-        .login-card .form-control {
-            text-align: right;
-            margin-bottom: 15px;
-        }
+        .login-card h2 { color: var(--accent-color); margin-bottom: 8px; font-size: 24px; }
+        .login-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; }
+        .login-card .form-control { text-align: right; margin-bottom: 15px; }
 
         .login-card input {
             width: 100%;
@@ -74,9 +61,7 @@
             outline: none;
         }
 
-        .login-card input:focus {
-            border-color: var(--accent-color);
-        }
+        .login-card input:focus { border-color: var(--accent-color); }
 
         .btn-login {
             background: var(--accent-color);
@@ -84,7 +69,7 @@
             border: none;
             padding: 12px;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
@@ -92,18 +77,10 @@
             transition: 0.3s;
         }
 
-        .btn-login:hover {
-            opacity: 0.9;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-        }
+        .btn-login:hover { opacity: 0.9; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
 
         /* --- Main App Layout --- */
-        #app-container {
-            display: flex;
-            width: 100%;
-            height: 100vh;
-        }
-
+        #app-container { display: flex; width: 100%; height: 100vh; }
         .sidebar { width: 280px; background: var(--card-bg); backdrop-filter: blur(12px); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
         .sidebar-top h2 { font-size: 20px; color: var(--accent-color); margin-bottom: 25px; text-align: center; }
 
@@ -114,7 +91,7 @@
         .rate-card label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 5px; }
         .rate-card input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; font-weight: bold; }
 
-        .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); margin-top: 15px; }
+        .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); margin-top: 10px; }
         .btn-logout:hover { background: var(--danger); color: white; }
 
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
@@ -143,7 +120,6 @@
         .btn-qty { background: var(--accent-color); color: white; border: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 14px; }
         
         .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(12px); overflow-y: auto; }
-
         .btn-checkout { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 8px; }
 
         .payment-calc { background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border); }
@@ -164,7 +140,6 @@
         .btn-edit { background: var(--warning); margin-left: 4px; }
         .btn-sec { background: var(--accent-color); }
         .btn-excel { background: #107c41; font-weight: bold; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-excel:hover { background: #0b5a2f; }
 
         .filter-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .filter-card select, .filter-card input { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
@@ -192,6 +167,7 @@
         <div class="login-card">
             <h2>چوونەژووریا کاشێریێ</h2>
             <p>تکایە ناڤ و پەیڤا نهێنی بنڤێسە دا بچی سەر وێبسایتی</p>
+            
             <form onsubmit="handleLogin(event)">
                 <div class="form-control">
                     <label>ناڤێ بەکارهێنەری (Username):</label>
@@ -201,7 +177,13 @@
                     <label>پەیڤا نهێنی (Password):</label>
                     <input type="password" id="login-pass" placeholder="••••" required>
                 </div>
+
+                <div style="text-align: right; margin-bottom: 15px;">
+                    <a href="#" onclick="handleForgotPassword(event)" style="color: var(--accent-color); font-size: 12px; text-decoration: none;">پەیڤا نهێنی ژبیرکر؟ (Forgot Password)</a>
+                </div>
+
                 <button type="submit" class="btn-login">چوونەژوور</button>
+                <button type="button" class="btn-login" onclick="openChangeAuthModal()" style="background: transparent; border: 1px solid var(--border); margin-top: 8px;">گوهۆڕینا یوزەر و پاسپۆرت ⚙️</button>
             </form>
         </div>
     </div>
@@ -245,7 +227,7 @@
                         <div style="margin-top: 15px;">
                             <div class="payment-calc">
                                 <label style="font-size:11px;">داشکان (%):</label>
-                                <input type="number" id="cart-discount-percent" value="0" min="0" max="100" placeholder="نموونە: 20" oninput="updateCart()">
+                                <input type="number" id="cart-discount-percent" value="0" min="0" max="100" placeholder="0" oninput="updateCart()">
                             </div>
 
                             <div style="font-size: 16px; font-weight: bold; margin: 10px 0 4px 0;">
@@ -301,9 +283,7 @@
                     </div>
 
                     <div style="margin-right:auto; align-self: flex-end;">
-                        <button class="btn-action btn-excel" onclick="exportToExcel()">
-                            📊 دابەزاندن بۆ ئێکستل (Export to Excel)
-                        </button>
+                        <button class="btn-action btn-excel" onclick="exportToExcel()">📊 دابەزاندن بۆ ئێکستل</button>
                     </div>
                 </div>
 
@@ -416,20 +396,69 @@
     </div>
 
     <script>
-        // --- 🔐 LOGIN LOGIC ---
-        const USERNAME_DB = "admin";
-        const PASSWORD_DB = "1234";
+        // --- 🔐 ADVANCED AUTHENTICATION SYSTEM ---
+        let storedUser = localStorage.getItem('app_username') || "admin";
+        let storedPass = localStorage.getItem('app_password') || "1234";
+        let secretPin = localStorage.getItem('app_secret_pin') || null;
 
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('login-user').value.trim();
             const p = document.getElementById('login-pass').value.trim();
 
-            if (u === USERNAME_DB && p === PASSWORD_DB) {
+            if (u === storedUser && p === storedPass) {
+                // Check if Secret PIN exists, if not prompt user to set it
+                if (!secretPin) {
+                    let newPin = prompt("تکایە پین کۆدەکێ ئیمناهیێ (Secret PIN) یێ تایبەت بۆ خۆ هەڵبژێرە ب تنێ ژ ژماران پێکهاتبیت:\n(ئەڤ کۆدە دێ هێتە بکارئینان جارا بهێت ئەگەر پەیڤا نهێنی ژبیربکەی)");
+                    if (newPin && newPin.trim() !== '') {
+                        secretPin = newPin.trim();
+                        localStorage.setItem('app_secret_pin', secretPin);
+                        alert("پین کۆدێ تە ب سەرکەفتیانە هاتە تۆمارکرن!");
+                    }
+                }
                 sessionStorage.setItem('isLoggedIn', 'true');
                 showApp();
             } else {
                 alert("ناڤێ بەکارهێنەری یان پەیڤا نهێنی شاشە!");
+            }
+        }
+
+        function openChangeAuthModal() {
+            const currentPass = prompt("بۆ گوهۆڕینێ، سەرەتا پەیڤا نهێنی یا نوکە (Current Password) بنڤێسە:");
+            if (currentPass !== storedPass) {
+                return alert("پەیڤا نهێنی یا شاشە!");
+            }
+
+            const newUser = prompt("ناڤێ بەکارهێنەری یێ نۆی (New Username):", storedUser);
+            if (!newUser) return;
+
+            const newPass = prompt("پەیڤا نهێنی یا نۆی (New Password):");
+            if (!newPass) return;
+
+            const newPin = prompt("پین کۆدێ نوو یێ ئیمناهیێ (New Secret PIN):", secretPin || "");
+            
+            storedUser = newUser.trim();
+            storedPass = newPass.trim();
+            if (newPin) secretPin = newPin.trim();
+
+            localStorage.setItem('app_username', storedUser);
+            localStorage.setItem('app_password', storedPass);
+            if (secretPin) localStorage.setItem('app_secret_pin', secretPin);
+
+            alert("زانیاریێن چوونەژوورێ ب سەرکەفتیانە هاتنە گوهۆڕین!");
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            if (!secretPin) {
+                return alert("هیچ پین کۆدەک نەهاتیە دروستکرن! تکایە ئێکەم جار ب یوزەر و پاسپۆرتێ بنەڕەتی بچۆ ژوور دا پین کۆدی ڕێکبێخی.");
+            }
+
+            const inputPin = prompt("تکایە پین کۆدێ ئەولەهیێ (Secret PIN) بنڤێسە:");
+            if (inputPin && inputPin.trim() === secretPin) {
+                alert(`زانیاریێن چوونەژووریا تە ئەڤەنە:\nUsername: ${storedUser}\nPassword: ${storedPass}`);
+            } else {
+                alert("پین کۆدێ هەڵە یە! نەشێی زانیاریان ببینی.");
             }
         }
 
@@ -444,7 +473,7 @@
             location.reload();
         }
 
-        // --- POS & DATA LOGIC ---
+        // --- POS DATA LOGIC ---
         let products = JSON.parse(localStorage.getItem('products_db')) || [
             { barcode: '1001', name: 'ئاڤ (0.5L)', cost: 0.15, price: 0.25, stock: 50, sold: 0 },
             { barcode: '1002', name: 'چبس لایز', cost: 0.35, price: 0.50, stock: 4, sold: 0 }
@@ -860,7 +889,6 @@
             updateAdminStats();
         }
 
-        // AUTO-CHECK LOGIN ON PAGE LOAD
         window.onload = function() {
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 showApp();
