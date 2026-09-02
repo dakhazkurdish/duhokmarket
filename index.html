@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستەمێ کاشێریێ یێ پێشکەفتی</title>
+    <title>سیستەمێ کاشێریێ یێ پێشکەفتی و پیشەیی</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
@@ -121,6 +121,7 @@
         
         .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(12px); overflow-y: auto; }
         .btn-checkout { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 8px; }
+        .btn-debt { background: var(--warning); color: white; border: none; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 6px; }
 
         .payment-calc { background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border); }
         .payment-calc input { width: 100%; padding: 7px; margin-top: 4px; margin-bottom: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
@@ -135,7 +136,7 @@
         th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { background: rgba(15, 23, 42, 0.8); }
 
-        .btn-action { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 13px; transition: 0.2s; }
+        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; transition: 0.2s; }
         .btn-delete { background: var(--danger); }
         .btn-edit { background: var(--warning); margin-left: 4px; }
         .btn-sec { background: var(--accent-color); }
@@ -152,6 +153,8 @@
         #scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .scanner-box { background: var(--bg-color); padding: 20px; border-radius: 16px; width: 380px; text-align: center; }
 
+        .alert-badge { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; display: none; }
+
         @media print {
             body * { visibility: hidden; }
             #receipt-print, #receipt-print * { visibility: visible; }
@@ -163,6 +166,7 @@
 </head>
 <body>
 
+    <!-- 🔒 LOGIN SECTION -->
     <div id="login-screen">
         <div class="login-card">
             <h2>چوونەژووریا کاشێریێ</h2>
@@ -188,6 +192,7 @@
         </div>
     </div>
 
+    <!-- MAIN APP WRAPPER -->
     <div id="app-container" style="display: none;">
         <div class="sidebar">
             <div class="sidebar-top">
@@ -206,7 +211,9 @@
         </div>
 
         <div class="main-content">
+            <!-- 1. POS TAB -->
             <div id="pos-tab" class="section active">
+                <div id="low-stock-alert" class="alert-badge">⚠️ ئاگەهداری: هەندەک کەلاپەل د عەمبارێ دا بەرەڤ کەمبوونێ ڤە دچن!</div>
                 <div class="pos-grid">
                     <div class="products-section">
                         <div class="search-box">
@@ -224,41 +231,43 @@
                     <div class="checkout-panel">
                         <h3>زانیاریێن پارەدانێ</h3>
                         
-                        <div style="margin-top: 15px;">
+                        <div style="margin-top: 10px;">
                             <div class="payment-calc">
                                 <label style="font-size:11px;">داشکان (%):</label>
                                 <input type="number" id="cart-discount-percent" value="0" min="0" max="100" placeholder="0" oninput="updateCart()">
                             </div>
 
-                            <div style="font-size: 16px; font-weight: bold; margin: 10px 0 4px 0;">
+                            <div style="font-size: 16px; font-weight: bold; margin: 8px 0 4px 0;">
                                 کۆم ($): $<span id="cart-total-usd">0.00</span>
                             </div>
-                            <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">
+                            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
                                 کۆم (دینار): <span id="cart-total-iqd">0</span> IQD
                             </div>
 
                             <div class="payment-calc">
                                 <label style="font-size:11px;">بڕا وەرگرتی ژ کریاری (دینار):</label>
                                 <input type="number" id="paid-iqd" placeholder="0" oninput="calculateChange()">
-                                <div style="font-size: 13px; font-weight: bold; color: var(--success); margin-top: 4px;">
+                                <div style="font-size: 12px; font-weight: bold; color: var(--success); margin-top: 4px;">
                                     بەقیا (دینار): <span id="change-iqd">0</span> IQD
                                 </div>
                             </div>
 
-                            <div style="margin: 10px 0;">
+                            <div style="margin: 8px 0;">
                                 <label style="font-size:11px; display:block; margin-bottom:4px;">شێوازێ چاپکرنێ:</label>
-                                <select id="print-format" style="width:100%; padding:8px; border-radius:8px; background:var(--bg-color); color:white; border:1px solid var(--border);">
+                                <select id="print-format" style="width:100%; padding:6px; border-radius:8px; background:var(--bg-color); color:white; border:1px solid var(--border);">
                                     <option value="thermal">Thermal (80mm)</option>
                                     <option value="a4">A4 Paper</option>
                                 </select>
                             </div>
                         </div>
 
-                        <button class="btn-checkout" onclick="checkout()">تەمامکرن & چاپکرن</button>
+                        <button class="btn-checkout" onclick="checkout(false)">تەمامکرن & چاپکرن</button>
+                        <button class="btn-debt" onclick="checkout(true)">تۆمارکرن وەکو قەرز 📝</button>
                     </div>
                 </div>
             </div>
 
+            <!-- 2. ADMIN DASHBOARD -->
             <div id="admin-tab" class="section">
                 <h2 style="margin-bottom: 15px;">داشبۆردا رێڤەبەری & جەردا دارایی</h2>
                 
@@ -269,6 +278,7 @@
                             <option value="all">هەموو دەمان (گشتی)</option>
                             <option value="monthly">هەیڤانە (Monthly)</option>
                             <option value="yearly">سالانە (Yearly)</option>
+                            <option value="custom">ب دیارکرنا بەرواری (Custom Range)</option>
                         </select>
                     </div>
 
@@ -280,6 +290,17 @@
                     <div id="yearly-select-group" style="display:none;">
                         <label style="font-size:12px; display:block; margin-bottom:3px;">سال بنڤێسە:</label>
                         <input type="number" id="filter-year" placeholder="2026" style="width:100px;" oninput="updateAdminStats()">
+                    </div>
+
+                    <div id="custom-range-group" style="display:none; display:flex; gap:10px;">
+                        <div>
+                            <label style="font-size:11px; display:block;">ژ بەرواری:</label>
+                            <input type="date" id="filter-start-date" onchange="updateAdminStats()">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; display:block;">تا بەرواری:</label>
+                            <input type="date" id="filter-end-date" onchange="updateAdminStats()">
+                        </div>
                     </div>
 
                     <div style="margin-right:auto; align-self: flex-end;">
@@ -299,6 +320,48 @@
                     <div class="stat-card">
                         <h3>قازانجا پاقژ</h3>
                         <p id="net-profit" style="color: var(--success);">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>کۆما قەرزان</h3>
+                        <p id="total-debts" style="color: var(--warning);">$0.00</p>
+                    </div>
+                </div>
+
+                <!-- DEBT MANAGEMENT SECTION -->
+                <div style="margin-bottom: 25px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h3>لیستا قەرزداران (Debts) 📝</h3>
+                    <br>
+                    <input type="text" id="debt-search" placeholder="لێگەڕیان ب ناڤێ قەرزداری..." onkeyup="renderDebts()" style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; width: 250px; margin-bottom: 12px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ناڤێ قەرزداری</th>
+                                <th>کۆما بڕی ($)</th>
+                                <th>بەروار</th>
+                                <th>بارودۆخ</th>
+                                <th>کردار</th>
+                            </tr>
+                        </thead>
+                        <tbody id="debts-table-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- RE-PRINT RECEIPTS SECTION -->
+                <div style="margin-bottom: 25px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h3>مێژوویا فرۆشتنان & چاپکرنا دووبارە 🧾</h3>
+                    <br>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>کۆدێ پسۆلێ</th>
+                                    <th>کۆم ($)</th>
+                                    <th>بەروار</th>
+                                    <th>چاپکرن</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-history-body"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -375,6 +438,7 @@
         </div>
     </div>
 
+    <!-- Scanner Modal -->
     <div id="scanner-modal">
         <div class="scanner-box">
             <h3>سکانکرنا بارکۆدی</h3>
@@ -384,9 +448,11 @@
         </div>
     </div>
 
+    <!-- Receipt Print -->
     <div id="receipt-print" style="display: none;">
         <h2 style="text-align: center;">پسۆلا مارکێتێ</h2>
         <p id="receipt-date" style="text-align:center; font-size:11px;"></p>
+        <p id="receipt-customer" style="text-align:center; font-size:12px; font-weight:bold;"></p>
         <hr style="margin: 10px 0;">
         <div id="receipt-items"></div>
         <hr style="margin: 10px 0;">
@@ -396,7 +462,7 @@
     </div>
 
     <script>
-        // --- 🔐 ADVANCED AUTHENTICATION SYSTEM ---
+        // --- 🔐 AUTHENTICATION SYSTEM ---
         let storedUser = localStorage.getItem('app_username') || "admin";
         let storedPass = localStorage.getItem('app_password') || "1234";
         let secretPin = localStorage.getItem('app_secret_pin') || null;
@@ -407,9 +473,8 @@
             const p = document.getElementById('login-pass').value.trim();
 
             if (u === storedUser && p === storedPass) {
-                // Check if Secret PIN exists, if not prompt user to set it
                 if (!secretPin) {
-                    let newPin = prompt("تکایە پین کۆدەکێ ئیمناهیێ (Secret PIN) یێ تایبەت بۆ خۆ هەڵبژێرە ب تنێ ژ ژماران پێکهاتبیت:\n(ئەڤ کۆدە دێ هێتە بکارئینان جارا بهێت ئەگەر پەیڤا نهێنی ژبیربکەی)");
+                    let newPin = prompt("تکایە پین کۆدەکێ ئیمناهیێ (Secret PIN) یێ تایبەت بۆ خۆ هەڵبژێرە ب تنێ ژ ژماران پێکهاتبیت:");
                     if (newPin && newPin.trim() !== '') {
                         secretPin = newPin.trim();
                         localStorage.setItem('app_secret_pin', secretPin);
@@ -425,9 +490,7 @@
 
         function openChangeAuthModal() {
             const currentPass = prompt("بۆ گوهۆڕینێ، سەرەتا پەیڤا نهێنی یا نوکە (Current Password) بنڤێسە:");
-            if (currentPass !== storedPass) {
-                return alert("پەیڤا نهێنی یا شاشە!");
-            }
+            if (currentPass !== storedPass) return alert("پەیڤا نهێنی یا شاشە!");
 
             const newUser = prompt("ناڤێ بەکارهێنەری یێ نۆی (New Username):", storedUser);
             if (!newUser) return;
@@ -450,15 +513,22 @@
 
         function handleForgotPassword(e) {
             e.preventDefault();
-            if (!secretPin) {
-                return alert("هیچ پین کۆدەک نەهاتیە دروستکرن! تکایە ئێکەم جار ب یوزەر و پاسپۆرتێ بنەڕەتی بچۆ ژوور دا پین کۆدی ڕێکبێخی.");
-            }
+            if (!secretPin) return alert("هیچ پین کۆدەک نەهاتیە دروستکرن!");
 
             const inputPin = prompt("تکایە پین کۆدێ ئەولەهیێ (Secret PIN) بنڤێسە:");
             if (inputPin && inputPin.trim() === secretPin) {
-                alert(`زانیاریێن چوونەژووریا تە ئەڤەنە:\nUsername: ${storedUser}\nPassword: ${storedPass}`);
+                alert(`زانیاریێن تە:\nUsername: ${storedUser}\nPassword: ${storedPass}`);
             } else {
-                alert("پین کۆدێ هەڵە یە! نەشێی زانیاریان ببینی.");
+                alert("پین کۆدێ هەڵە یە!");
+            }
+        }
+
+        function checkAdmin() {
+            const pwd = prompt("تکایە پەیڤا نهێنی یا رێڤەبەری بنڤێسە:");
+            if (pwd === storedPass) {
+                switchTab('admin');
+            } else {
+                alert("پەیڤا نهێنی شاشە!");
             }
         }
 
@@ -466,6 +536,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'flex';
             renderProducts();
+            checkLowStockAlert();
         }
 
         function logout() {
@@ -481,7 +552,13 @@
 
         let cart = [];
         let salesHistory = JSON.parse(localStorage.getItem('sales_db')) || [];
+        let debts = JSON.parse(localStorage.getItem('debts_db')) || [];
         let html5QrcodeScanner = null;
+
+        function checkLowStockAlert() {
+            const lowStock = products.some(p => p.stock <= 5);
+            document.getElementById('low-stock-alert').style.display = lowStock ? 'block' : 'none';
+        }
 
         function renderProducts(items = products) {
             const container = document.getElementById('products-list');
@@ -586,12 +663,22 @@
             renderProducts(filtered);
         }
 
-        function checkout() {
+        // --- CHECKOUT & DEBT LOGIC ---
+        function checkout(isDebt = false) {
             if (cart.length === 0) return alert("سەبەتە یا بەتالە!");
+
+            let customerName = "";
+            if (isDebt) {
+                customerName = prompt("تکایە ناڤێ کریاری/قەرزداری بنڤێسە:");
+                if (!customerName || customerName.trim() === "") return alert("تۆمارکرنا قەرز بەتال بوو! پێویستە ناڤ بنڤێسی.");
+            }
 
             let totalUSD = parseFloat(document.getElementById('cart-total-usd').innerText) || 0;
             let receiptHTML = '';
             const now = new Date();
+            const transactionId = 'REC-' + Date.now();
+
+            let currentSaleItems = [];
 
             cart.forEach(item => {
                 const pIndex = products.findIndex(p => p.barcode === item.barcode);
@@ -600,19 +687,36 @@
                     products[pIndex].stock -= item.qty; 
                 }
 
-                salesHistory.push({
+                const saleRecord = {
+                    txId: transactionId,
                     barcode: item.barcode,
                     name: item.name,
                     qty: item.qty,
                     cost: item.cost * item.qty,
                     price: item.price * item.qty,
                     profit: (item.price - item.cost) * item.qty,
+                    isDebt: isDebt,
+                    customer: isDebt ? customerName : 'Cash',
                     timestamp: now.toISOString(),
                     date: now.toLocaleString()
-                });
+                };
+
+                salesHistory.push(saleRecord);
+                currentSaleItems.push(saleRecord);
 
                 receiptHTML += `<p>${item.name} (x${item.qty}) - $${(item.price * item.qty).toFixed(2)}</p>`;
             });
+
+            if (isDebt) {
+                debts.push({
+                    id: Date.now(),
+                    customer: customerName,
+                    amountUSD: totalUSD,
+                    date: now.toLocaleString(),
+                    status: 'Unpaid'
+                });
+                localStorage.setItem('debts_db', JSON.stringify(debts));
+            }
 
             localStorage.setItem('products_db', JSON.stringify(products));
             localStorage.setItem('sales_db', JSON.stringify(salesHistory));
@@ -623,11 +727,12 @@
             const changeIQD = paidIQD - totalIQD;
 
             document.getElementById('receipt-date').innerText = "دەم: " + now.toLocaleString();
+            document.getElementById('receipt-customer').innerText = isDebt ? "کریار (قەرز): " + customerName : "کریار: نەقدی";
             document.getElementById('receipt-items').innerHTML = receiptHTML;
             document.getElementById('receipt-total-usd').innerText = "کۆما گشتی ($): $" + totalUSD.toFixed(2);
             document.getElementById('receipt-total-iqd').innerText = "کۆما گشتی (IQD): " + Math.round(totalIQD).toLocaleString() + " IQD";
             
-            if (paidIQD > 0) {
+            if (!isDebt && paidIQD > 0) {
                 document.getElementById('receipt-change-details').innerHTML = `
                     <p>بڕا وەرگرتی: ${Math.round(paidIQD).toLocaleString()} IQD</p>
                     <p>بەقیا: ${changeIQD > 0 ? Math.round(changeIQD).toLocaleString() : 0} IQD</p>
@@ -646,13 +751,16 @@
             document.getElementById('cart-discount-percent').value = '0';
             updateCart();
             renderProducts();
-            alert("فرۆشتن ب سەرکەفتیانە تەمام بوو!");
+            checkLowStockAlert();
+            alert(isDebt ? "قەرز ب سەرکەفتیانە هاتە تۆمارکرن!" : "فرۆشتن ب سەرکەفتیانە تەمام بوو!");
         }
 
+        // --- DASHBOARD FILTERS & STATS ---
         function toggleFilterType() {
             const type = document.getElementById('filter-type').value;
             document.getElementById('monthly-select-group').style.display = type === 'monthly' ? 'block' : 'none';
             document.getElementById('yearly-select-group').style.display = type === 'yearly' ? 'block' : 'none';
+            document.getElementById('custom-range-group').style.display = type === 'custom' ? 'flex' : 'none';
 
             if (type === 'monthly' && !document.getElementById('filter-month').value) {
                 const now = new Date();
@@ -682,6 +790,14 @@
                     const selectedYear = document.getElementById('filter-year').value;
                     if (!selectedYear) return true;
                     return date.getFullYear() == selectedYear;
+                } else if (type === 'custom') {
+                    const start = document.getElementById('filter-start-date').value;
+                    const end = document.getElementById('filter-end-date').value;
+                    if (!start || !end) return true;
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    endDate.setHours(23, 59, 59);
+                    return date >= startDate && date <= endDate;
                 }
                 return true;
             });
@@ -696,9 +812,15 @@
                 cost += s.cost; 
             });
 
+            let totalDebtSum = debts.filter(d => d.status === 'Unpaid').reduce((acc, d) => acc + d.amountUSD, 0);
+
             document.getElementById('total-sales').innerText = `$${sales.toFixed(2)}`;
             document.getElementById('total-cost').innerText = `$${cost.toFixed(2)}`;
             document.getElementById('net-profit').innerText = `$${(sales - cost).toFixed(2)}`;
+            document.getElementById('total-debts').innerText = `$${totalDebtSum.toFixed(2)}`;
+
+            renderDebts();
+            renderSalesHistory();
 
             const tbody = document.getElementById('admin-products-body');
             tbody.innerHTML = '';
@@ -719,34 +841,111 @@
             });
         }
 
+        function renderDebts() {
+            const tbody = document.getElementById('debts-table-body');
+            const searchVal = document.getElementById('debt-search') ? document.getElementById('debt-search').value.toLowerCase() : '';
+            tbody.innerHTML = '';
+
+            debts.filter(d => d.customer.toLowerCase().includes(searchVal)).forEach((d, idx) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${d.customer}</td>
+                        <td>$${d.amountUSD.toFixed(2)}</td>
+                        <td>${d.date}</td>
+                        <td style="color:${d.status === 'Paid' ? 'var(--success)' : 'var(--danger)'}">${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</td>
+                        <td>
+                            ${d.status === 'Unpaid' ? `<button class="btn-action btn-sec" onclick="payDebt(${d.id})">دان ب تەمامی</button>` : '✔️'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function payDebt(id) {
+            const debtIndex = debts.findIndex(d => d.id === id);
+            if (debtIndex !== -1) {
+                debts[debtIndex].status = 'Paid';
+                localStorage.setItem('debts_db', JSON.stringify(debts));
+                updateAdminStats();
+                alert("قەرز ب سەرکەفتیانە وەک داندریا هاتە تۆمارکرن!");
+            }
+        }
+
+        function renderSalesHistory() {
+            const tbody = document.getElementById('sales-history-body');
+            tbody.innerHTML = '';
+
+            const groupedSales = {};
+            salesHistory.forEach(s => {
+                const key = s.txId || s.date;
+                if (!groupedSales[key]) {
+                    groupedSales[key] = { txId: key, date: s.date, total: 0, items: [] };
+                }
+                groupedSales[key].total += s.price;
+                groupedSales[key].items.push(s);
+            });
+
+            Object.values(groupedSales).reverse().slice(0, 15).forEach(group => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${group.txId.slice(-8)}</td>
+                        <td>$${group.total.toFixed(2)}</td>
+                        <td>${group.date}</td>
+                        <td><button class="btn-action btn-sec" onclick="reprintReceipt('${group.txId}')">چاپکرنەوە 🖨️</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function reprintReceipt(txId) {
+            const items = salesHistory.filter(s => (s.txId || s.date) === txId);
+            if (items.length === 0) return alert("پسۆل نەهاتە لێدوان!");
+
+            let receiptHTML = '';
+            let totalUSD = 0;
+            items.forEach(i => {
+                totalUSD += i.price;
+                receiptHTML += `<p>${i.name} (x${i.qty}) - $${i.price.toFixed(2)}</p>`;
+            });
+
+            const rate100 = parseFloat(document.getElementById('usd-rate').value) || 150000;
+            const totalIQD = (totalUSD / 100) * rate100;
+
+            document.getElementById('receipt-date').innerText = "دەمی چاپکرنەوە: " + new Date().toLocaleString();
+            document.getElementById('receipt-customer').innerText = items[0].isDebt ? "کریار (قەرز): " + items[0].customer : "کریار: نەقدی";
+            document.getElementById('receipt-items').innerHTML = receiptHTML;
+            document.getElementById('receipt-total-usd').innerText = "کۆما گشتی ($): $" + totalUSD.toFixed(2);
+            document.getElementById('receipt-total-iqd').innerText = "کۆما گشتی (IQD): " + Math.round(totalIQD).toLocaleString() + " IQD";
+            document.getElementById('receipt-change-details').innerHTML = '';
+
+            window.print();
+        }
+
         function exportToExcel() {
             const filteredSales = getFilteredSales();
-            if (filteredSales.length === 0) return alert("هیچ داتایەک نینە بۆ ناردن دیارکری ب ڤی فیلتەری!");
+            if (filteredSales.length === 0) return alert("هیچ داتایەک نینە!");
 
             let csvContent = "\uFEFF"; 
-            csvContent += "Barcode,Item Name,Quantity,Cost ($),Sales ($),Profit ($),Date\n";
+            csvContent += "Barcode,Item Name,Customer,Quantity,Cost ($),Sales ($),Profit ($),Date\n";
 
             filteredSales.forEach(s => {
                 const profit = s.profit !== undefined ? s.profit : (s.price - s.cost);
-                csvContent += `"${s.barcode}","${s.name}",${s.qty},${s.cost.toFixed(2)},${s.price.toFixed(2)},${profit.toFixed(2)},"${s.date}"\n`;
+                csvContent += `"${s.barcode}","${s.name}","${s.customer || 'Cash'}",${s.qty},${s.cost.toFixed(2)},${s.price.toFixed(2)},${profit.toFixed(2)},"${s.date}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             
-            const filterType = document.getElementById('filter-type').value;
-            let fileName = `Jard_Sales_${filterType}_${new Date().toISOString().slice(0,10)}.csv`;
-
             link.setAttribute("href", url);
-            link.setAttribute("download", fileName);
+            link.setAttribute("download", `Report_Sales_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ products, salesHistory }));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ products, salesHistory, debts }));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `backup_pos_${new Date().toISOString().slice(0,10)}.json`);
@@ -763,8 +962,12 @@
                     if (parsed.products && parsed.salesHistory) {
                         products = parsed.products;
                         salesHistory = parsed.salesHistory;
+                        if(parsed.debts) debts = parsed.debts;
+
                         localStorage.setItem('products_db', JSON.stringify(products));
                         localStorage.setItem('sales_db', JSON.stringify(salesHistory));
+                        localStorage.setItem('debts_db', JSON.stringify(debts));
+
                         renderProducts();
                         updateAdminStats();
                         alert("داتا ب سەرکەفتیانە هاتنە ڤەگەڕاندن!");
@@ -790,15 +993,6 @@
             document.getElementById('scanner-modal').style.display = 'none';
         }
 
-        function checkAdmin() {
-            const pwd = prompt("تکایە پاسپۆرتێ رێڤەبەری بنڤێسە:");
-            if (pwd === 'admin123') {
-                switchTab('admin');
-            } else {
-                alert("پاسپۆرت شاشە!");
-            }
-        }
-
         function switchTab(tab) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -819,6 +1013,7 @@
                 localStorage.setItem('products_db', JSON.stringify(products));
                 renderProducts();
                 updateAdminStats();
+                checkLowStockAlert();
             }
         }
 
@@ -887,6 +1082,7 @@
             resetForm();
             renderProducts();
             updateAdminStats();
+            checkLowStockAlert();
         }
 
         window.onload = function() {
