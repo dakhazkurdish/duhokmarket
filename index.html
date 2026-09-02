@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستەمێ کاشێریێ یێ پێشکەفتی و پیشەیی</title>
+    <title>سیستەمێ کاشێریێ یێ پێشکەفتی یێ گشتی</title>
+    <!-- HTML5 QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
@@ -21,178 +22,108 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
 
-        /* --- Login Screen Styling --- */
-        #login-screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
+        /* Login Modal */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at top right, #1e1b4b, #0f172a); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(16px); padding: 35px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; }
+        .login-card h2 { color: var(--accent-color); margin-bottom: 8px; }
+        .login-card input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.8); color: white; margin-top: 5px; margin-bottom: 15px; outline: none; }
+        .btn-login { background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        .login-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            backdrop-filter: blur(16px);
-            padding: 35px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
-        }
-
-        .login-card h2 { color: var(--accent-color); margin-bottom: 8px; font-size: 24px; }
-        .login-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; }
-        .login-card .form-control { text-align: right; margin-bottom: 15px; }
-
-        .login-card input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.8);
-            color: white;
-            font-size: 14px;
-            margin-top: 5px;
-            outline: none;
-        }
-
-        .login-card input:focus { border-color: var(--accent-color); }
-
-        .btn-login {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-        .btn-login:hover { opacity: 0.9; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-
-        /* --- Main App Layout --- */
+        /* Layout */
         #app-container { display: flex; width: 100%; height: 100vh; }
         .sidebar { width: 280px; background: var(--card-bg); backdrop-filter: blur(12px); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
         .sidebar-top h2 { font-size: 20px; color: var(--accent-color); margin-bottom: 25px; text-align: center; }
 
-        .nav-btn { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 12px 14px; font-size: 15px; border-radius: 12px; cursor: pointer; text-align: right; margin-bottom: 8px; transition: all 0.3s ease; }
+        .nav-btn { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 12px 14px; font-size: 15px; border-radius: 12px; cursor: pointer; text-align: right; margin-bottom: 8px; transition: 0.3s; }
         .nav-btn:hover, .nav-btn.active { background: var(--accent-color); color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
 
         .rate-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-top: 15px; }
-        .rate-card label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 5px; }
         .rate-card input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; font-weight: bold; }
 
-        .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); margin-top: 10px; }
+        .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); }
         .btn-logout:hover { background: var(--danger); color: white; }
 
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .section { display: none; }
         .section.active { display: block; }
 
+        /* POS UI */
         .pos-grid { display: grid; grid-template-columns: 1.8fr 1.1fr 1.1fr; gap: 15px; height: calc(100vh - 40px); }
         .products-section { display: flex; flex-direction: column; gap: 15px; }
         .search-box { display: flex; gap: 10px; }
         .search-box input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; font-size: 16px; }
 
-        .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 160px); padding-left: 5px; }
-        .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(8px); position: relative;}
-        .product-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
-        .product-card.out-of-stock { opacity: 0.5; cursor: not-allowed; border-color: var(--danger); }
-        .product-card.low-stock { border-color: var(--warning); }
-        .product-card h4 { margin-bottom: 6px; font-size: 15px; }
-        .product-card .barcode-tag { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
-        .product-card .stock-tag { font-size: 11px; color: var(--accent-color); margin-bottom: 6px; }
-        .product-card .price { color: var(--success); font-weight: bold; font-size: 15px; }
+        .cat-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+        .cat-btn { padding: 6px 12px; border-radius: 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; white-space: nowrap; font-size: 13px; }
+        .cat-btn.active { background: var(--accent-color); color: white; }
 
-        .cart-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; backdrop-filter: blur(12px); overflow: hidden; }
-        .cart-items { flex: 1; overflow-y: auto; margin-top: 10px; padding-left: 4px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(15, 23, 42, 0.4); border-radius: 10px; margin-bottom: 8px; }
-        .cart-item-actions { display: flex; gap: 6px; align-items: center; }
-        .btn-qty { background: var(--accent-color); color: white; border: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        
-        .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(12px); overflow-y: auto; }
-        .btn-checkout { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 8px; }
-        .btn-debt { background: var(--warning); color: white; border: none; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 6px; }
+        .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 210px); padding-left: 5px; }
+        .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .product-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
+        .product-card.out-of-stock { opacity: 0.5; border-color: var(--danger); }
+        .product-card.exp-warning { border-color: var(--warning); }
+        .product-card h4 { margin-bottom: 4px; font-size: 14px; }
+        .product-card .price { color: var(--success); font-weight: bold; font-size: 14px; }
+        .exp-tag { font-size: 10px; color: var(--warning); margin-top: 4px; }
+
+        .cart-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; }
+        .cart-items { flex: 1; overflow-y: auto; margin-top: 10px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(15, 23, 42, 0.4); border-radius: 10px; margin-bottom: 8px; }
+        .btn-qty { background: var(--accent-color); color: white; border: none; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; }
+
+        .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+        .btn-checkout { background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
+        .btn-debt { background: var(--warning); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; }
 
         .payment-calc { background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border); }
-        .payment-calc input { width: 100%; padding: 7px; margin-top: 4px; margin-bottom: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
+        .payment-calc input { width: 100%; padding: 7px; margin-top: 4px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
+        /* Admin UI */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: 14px; }
-        .stat-card h3 { color: var(--text-muted); font-size: 13px; margin-bottom: 6px; }
-        .stat-card p { font-size: 22px; font-weight: bold; }
 
         .admin-flex { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
         table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
         th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { background: rgba(15, 23, 42, 0.8); }
 
-        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; transition: 0.2s; }
+        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; }
         .btn-delete { background: var(--danger); }
-        .btn-edit { background: var(--warning); margin-left: 4px; }
+        .btn-edit { background: var(--warning); }
         .btn-sec { background: var(--accent-color); }
-        .btn-excel { background: #107c41; font-weight: bold; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 6px; }
-
-        .filter-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .filter-card select, .filter-card input { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
         .form-control { margin-bottom: 10px; }
         .form-control label { display: block; margin-bottom: 3px; font-size: 13px; }
         .form-control input, .form-control select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; }
-        .price-input-group { display: flex; gap: 8px; }
 
+        /* Scanner Modal */
         #scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .scanner-box { background: var(--bg-color); padding: 20px; border-radius: 16px; width: 380px; text-align: center; }
 
-        .alert-badge { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; display: none; }
-
+        /* Print Style */
         @media print {
             body * { visibility: hidden; }
             #receipt-print, #receipt-print * { visibility: visible; }
-            #receipt-print { position: absolute; left: 0; top: 0; color: black; background: white; }
-            body.print-thermal #receipt-print { width: 80mm; padding: 5mm; font-size: 12px; }
-            body.print-a4 #receipt-print { width: 210mm; padding: 15mm; font-size: 16px; }
+            #receipt-print { position: absolute; left: 0; top: 0; color: black; background: white; width: 80mm; padding: 5mm; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 🔒 LOGIN SECTION -->
+    <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-card">
             <h2>چوونەژووریا کاشێریێ</h2>
-            <p>تکایە ناڤ و پەیڤا نهێنی بنڤێسە دا بچی سەر وێبسایتی</p>
-            
+            <br>
             <form onsubmit="handleLogin(event)">
-                <div class="form-control">
-                    <label>ناڤێ بەکارهێنەری (Username):</label>
-                    <input type="text" id="login-user" placeholder="admin" required autocomplete="off">
-                </div>
-                <div class="form-control">
-                    <label>پەیڤا نهێنی (Password):</label>
-                    <input type="password" id="login-pass" placeholder="••••" required>
-                </div>
-
-                <div style="text-align: right; margin-bottom: 15px;">
-                    <a href="#" onclick="handleForgotPassword(event)" style="color: var(--accent-color); font-size: 12px; text-decoration: none;">پەیڤا نهێنی ژبیرکر؟ (Forgot Password)</a>
-                </div>
-
+                <input type="text" id="login-user" placeholder="ناڤێ بەکارهێنەری" required>
+                <input type="password" id="login-pass" placeholder="پەیڤا نهێنی" required>
                 <button type="submit" class="btn-login">چوونەژوور</button>
-                <button type="button" class="btn-login" onclick="openChangeAuthModal()" style="background: transparent; border: 1px solid var(--border); margin-top: 8px;">گوهۆڕینا یوزەر و پاسپۆرت ⚙️</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
+    <!-- MAIN CONTAINER -->
     <div id="app-container" style="display: none;">
         <div class="sidebar">
             <div class="sidebar-top">
@@ -200,143 +131,79 @@
                 <button class="nav-btn active" onclick="switchTab('pos')">پشکا کاشێری (POS)</button>
                 <button class="nav-btn" onclick="checkAdmin()">پشکا رێڤەبەری (Dashboard)</button>
             </div>
-
             <div>
                 <div class="rate-card">
-                    <label>نرخێ بورصێ (100$ ب IQD):</label>
+                    <label style="font-size: 11px;">100$ ب IQD:</label>
                     <input type="number" id="usd-rate" value="150000" oninput="calculateChange()">
                 </div>
-                <button class="nav-btn btn-logout" onclick="logout()">دەرکەفتن 🚪</button>
+                <button class="nav-btn btn-logout" onclick="logout()" style="margin-top:10px;">دەرکەفتن 🚪</button>
             </div>
         </div>
 
         <div class="main-content">
-            <!-- 1. POS TAB -->
+            <!-- POS TAB -->
             <div id="pos-tab" class="section active">
-                <div id="low-stock-alert" class="alert-badge">⚠️ ئاگەهداری: هەندەک کەلاپەل د عەمبارێ دا بەرەڤ کەمبوونێ ڤە دچن!</div>
                 <div class="pos-grid">
                     <div class="products-section">
                         <div class="search-box">
-                            <input type="text" id="search-input" placeholder="لێگەڕیان ب ناڤ یان بارکۆد..." onkeyup="handleSearch(event)">
-                            <button class="nav-btn" style="margin:0; width:auto;" onclick="openScanner()">کامێرا بارکۆد 📷</button>
+                            <input type="text" id="search-input" placeholder="لێگەڕیان (F2)..." onkeyup="handleSearch(event)">
+                            <button class="nav-btn" style="width:auto; margin:0;" onclick="openScanner()">📷</button>
                         </div>
+                        
+                        <!-- CATEGORY FILTER BAR -->
+                        <div class="cat-bar" id="category-bar"></div>
+
                         <div class="products-cards" id="products-list"></div>
                     </div>
 
                     <div class="cart-panel">
-                        <h3>سەبەتەیا فرۆشتنێ</h3>
+                        <h3>سەبەتە</h3>
                         <div class="cart-items" id="cart-items"></div>
                     </div>
 
                     <div class="checkout-panel">
-                        <h3>زانیاریێن پارەدانێ</h3>
-                        
-                        <div style="margin-top: 10px;">
+                        <h3>پارەدان</h3>
+                        <div>
                             <div class="payment-calc">
                                 <label style="font-size:11px;">داشکان (%):</label>
-                                <input type="number" id="cart-discount-percent" value="0" min="0" max="100" placeholder="0" oninput="updateCart()">
+                                <input type="number" id="cart-discount-percent" value="0" oninput="updateCart()">
                             </div>
-
-                            <div style="font-size: 16px; font-weight: bold; margin: 8px 0 4px 0;">
-                                کۆم ($): $<span id="cart-total-usd">0.00</span>
-                            </div>
-                            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-                                کۆم (دینار): <span id="cart-total-iqd">0</span> IQD
-                            </div>
+                            <div style="font-weight: bold; margin-top:5px;">کۆم ($): $<span id="cart-total-usd">0.00</span></div>
+                            <div style="font-size: 12px; color: var(--text-muted);">کۆم (IQD): <span id="cart-total-iqd">0</span></div>
 
                             <div class="payment-calc">
-                                <label style="font-size:11px;">بڕا وەرگرتی ژ کریاری (دینار):</label>
-                                <input type="number" id="paid-iqd" placeholder="0" oninput="calculateChange()">
-                                <div style="font-size: 12px; font-weight: bold; color: var(--success); margin-top: 4px;">
-                                    بەقیا (دینار): <span id="change-iqd">0</span> IQD
-                                </div>
-                            </div>
-
-                            <div style="margin: 8px 0;">
-                                <label style="font-size:11px; display:block; margin-bottom:4px;">شێوازێ چاپکرنێ:</label>
-                                <select id="print-format" style="width:100%; padding:6px; border-radius:8px; background:var(--bg-color); color:white; border:1px solid var(--border);">
-                                    <option value="thermal">Thermal (80mm)</option>
-                                    <option value="a4">A4 Paper</option>
-                                </select>
+                                <label style="font-size:11px;">وەرگرتی (IQD):</label>
+                                <input type="number" id="paid-iqd" oninput="calculateChange()">
+                                <div style="font-size:12px; color:var(--success); margin-top:3px;">بەقیا: <span id="change-iqd">0</span> IQD</div>
                             </div>
                         </div>
 
-                        <button class="btn-checkout" onclick="checkout(false)">تەمامکرن & چاپکرن</button>
-                        <button class="btn-debt" onclick="checkout(true)">تۆمارکرن وەکو قەرز 📝</button>
+                        <button class="btn-checkout" onclick="checkout(false)">تەمامکرن (Space)</button>
+                        <button class="btn-debt" onclick="checkout(true)">تۆمار ب قەرز 📝</button>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. ADMIN DASHBOARD -->
+            <!-- ADMIN TAB -->
             <div id="admin-tab" class="section">
-                <h2 style="margin-bottom: 15px;">داشبۆردا رێڤەبەری & جەردا دارایی</h2>
-                
-                <div class="filter-card">
-                    <div>
-                        <label style="font-size:12px; display:block; margin-bottom:3px;">فیلتەرکرن ب گوێرەی:</label>
-                        <select id="filter-type" onchange="toggleFilterType()">
-                            <option value="all">هەموو دەمان (گشتی)</option>
-                            <option value="monthly">هەیڤانە (Monthly)</option>
-                            <option value="yearly">سالانە (Yearly)</option>
-                            <option value="custom">ب دیارکرنا بەرواری (Custom Range)</option>
-                        </select>
-                    </div>
-
-                    <div id="monthly-select-group" style="display:none;">
-                        <label style="font-size:12px; display:block; margin-bottom:3px;">هەیڤ هەڵبژێرە:</label>
-                        <input type="month" id="filter-month" onchange="updateAdminStats()">
-                    </div>
-
-                    <div id="yearly-select-group" style="display:none;">
-                        <label style="font-size:12px; display:block; margin-bottom:3px;">سال بنڤێسە:</label>
-                        <input type="number" id="filter-year" placeholder="2026" style="width:100px;" oninput="updateAdminStats()">
-                    </div>
-
-                    <div id="custom-range-group" style="display:none; display:flex; gap:10px;">
-                        <div>
-                            <label style="font-size:11px; display:block;">ژ بەرواری:</label>
-                            <input type="date" id="filter-start-date" onchange="updateAdminStats()">
-                        </div>
-                        <div>
-                            <label style="font-size:11px; display:block;">تا بەرواری:</label>
-                            <input type="date" id="filter-end-date" onchange="updateAdminStats()">
-                        </div>
-                    </div>
-
-                    <div style="margin-right:auto; align-self: flex-end;">
-                        <button class="btn-action btn-excel" onclick="exportToExcel()">📊 دابەزاندن بۆ ئێکستل</button>
-                    </div>
-                </div>
-
+                <h2>داشبۆردا رێڤەبەری</h2>
+                <br>
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>کۆما فرۆشتنان</h3>
-                        <p id="total-sales">$0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>کۆما تێچووی (کڕین)</h3>
-                        <p id="total-cost">$0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>قازانجا پاقژ</h3>
-                        <p id="net-profit" style="color: var(--success);">$0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>کۆما قەرزان</h3>
-                        <p id="total-debts" style="color: var(--warning);">$0.00</p>
-                    </div>
+                    <div class="stat-card"><h3>کۆما فرۆشتنان</h3><p id="total-sales">$0.00</p></div>
+                    <div class="stat-card"><h3>کۆما تێچووی</h3><p id="total-cost">$0.00</p></div>
+                    <div class="stat-card"><h3>قازانجا پاقژ</h3><p id="net-profit" style="color:var(--success);">$0.00</p></div>
+                    <div class="stat-card"><h3>کۆما قەرزان</h3><p id="total-debts" style="color:var(--warning);">$0.00</p></div>
                 </div>
 
-                <!-- DEBT MANAGEMENT SECTION -->
-                <div style="margin-bottom: 25px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
-                    <h3>لیستا قەرزداران (Debts) 📝</h3>
+                <!-- DEBT MANAGEMENT -->
+                <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3>لیستا قەرزداران</h3>
                     <br>
-                    <input type="text" id="debt-search" placeholder="لێگەڕیان ب ناڤێ قەرزداری..." onkeyup="renderDebts()" style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; width: 250px; margin-bottom: 12px;">
                     <table>
                         <thead>
                             <tr>
-                                <th>ناڤێ قەرزداری</th>
-                                <th>کۆما بڕی ($)</th>
+                                <th>کریار</th>
+                                <th>بڕێ قەرزی ($)</th>
                                 <th>بەروار</th>
                                 <th>بارودۆخ</th>
                                 <th>کردار</th>
@@ -346,91 +213,64 @@
                     </table>
                 </div>
 
-                <!-- RE-PRINT RECEIPTS SECTION -->
-                <div style="margin-bottom: 25px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
-                    <h3>مێژوویا فرۆشتنان & چاپکرنا دووبارە 🧾</h3>
-                    <br>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>کۆدێ پسۆلێ</th>
-                                    <th>کۆم ($)</th>
-                                    <th>بەروار</th>
-                                    <th>چاپکرن</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sales-history-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <div class="admin-flex">
                     <div>
-                        <h3>لیستا کەلاپەلان & عەمبار</h3>
+                        <h3>عەمبار & کەلاپەل</h3>
                         <br>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>کەلاپەل</th>
+                                    <th>ناڤ</th>
+                                    <th>کاتۆگۆری</th>
                                     <th>عەمبار</th>
-                                    <th>تێچوو ($)</th>
-                                    <th>فرۆشتن ($)</th>
+                                    <th>بەسەرچوون</th>
+                                    <th>نرخ ($)</th>
                                     <th>کردار</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-products-body"></tbody>
                         </table>
-
-                        <h3>پاراستنا داتایان (Backup & Restore)</h3>
-                        <br>
-                        <button class="btn-action btn-sec" onclick="exportData()">داتایان دابەزێنە (Backup JSON)</button>
-                        <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
-                        <button class="btn-action btn-edit" onclick="document.getElementById('import-file').click()">داتایان بگەڕێنە (Restore JSON)</button>
                     </div>
 
                     <div>
-                        <h3 id="form-title">زێدەکرنا کەلاپەلەکێ نۆی</h3>
+                        <h3 id="form-title">زێدەکرنا کەلاپەلی</h3>
                         <br>
-                        <form id="product-form" onsubmit="saveProduct(event)" style="background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
+                        <form id="product-form" onsubmit="saveProduct(event)" style="background: var(--card-bg); padding: 15px; border-radius: 12px;">
                             <input type="hidden" id="edit-mode" value="false">
                             <div class="form-control">
-                                <label>کۆدێ بارکۆدی:</label>
-                                <input type="text" id="prod-barcode" required placeholder="بارکۆدی سکان بکە">
+                                <label>بارکۆد:</label>
+                                <input type="text" id="prod-barcode" required>
                             </div>
                             <div class="form-control">
-                                <label>ناڤێ کەلاپەلی:</label>
+                                <label>ناڤ:</label>
                                 <input type="text" id="prod-name" required>
                             </div>
                             <div class="form-control">
-                                <label>بڕ د عەمبارێ دا (Stock):</label>
+                                <label>کاتۆگۆری:</label>
+                                <select id="prod-category">
+                                    <option value="گشتی">گشتی</option>
+                                    <option value="ڤەخوارن">ڤەخوارن</option>
+                                    <option value="خوارن">خوارن</option>
+                                    <option value="پاقژکەر">پاقژکەر</option>
+                                </select>
+                            </div>
+                            <div class="form-control">
+                                <label>عەمبار:</label>
                                 <input type="number" id="prod-stock" required value="10">
                             </div>
-                            
                             <div class="form-control">
-                                <label>بیهایێ کریارێ (تێچوو):</label>
-                                <div class="price-input-group">
-                                    <input type="number" step="0.01" id="prod-cost" required>
-                                    <select id="prod-cost-curr">
-                                        <option value="USD">دۆلار ($)</option>
-                                        <option value="IQD">دینار (IQD)</option>
-                                    </select>
-                                </div>
+                                <label>بەروارێ بەسەرچوونێ:</label>
+                                <input type="date" id="prod-expiry">
                             </div>
-
                             <div class="form-control">
-                                <label>بیهایێ فرۆشتنێ:</label>
-                                <div class="price-input-group">
-                                    <input type="number" step="0.01" id="prod-price" required>
-                                    <select id="prod-price-curr">
-                                        <option value="USD">دۆلار ($)</option>
-                                        <option value="IQD">دینار (IQD)</option>
-                                    </select>
-                                </div>
+                                <label>تێچوو ($):</label>
+                                <input type="number" step="0.01" id="prod-cost" required>
                             </div>
-
-                            <button type="submit" id="btn-submit-prod" class="btn-checkout" style="background: var(--accent-color);">زێدەبکە</button>
-                            <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="btn-checkout" style="background: var(--text-muted); display:none; margin-top:5px;">پەشیمانبوونەوە</button>
+                            <div class="form-control">
+                                <label>فرۆشتن ($):</label>
+                                <input type="number" step="0.01" id="prod-price" required>
+                            </div>
+                            <button type="submit" class="btn-checkout">تۆمارکرن</button>
                         </form>
                     </div>
                 </div>
@@ -438,116 +278,38 @@
         </div>
     </div>
 
-    <!-- Scanner Modal -->
+    <!-- SCANNER MODAL -->
     <div id="scanner-modal">
         <div class="scanner-box">
-            <h3>سکانکرنا بارکۆدی</h3>
-            <div id="reader" style="width: 100%; margin-top: 15px;"></div>
-            <br>
-            <button class="nav-btn" style="background: var(--danger); color: white;" onclick="closeScanner()">داخستن</button>
+            <h3>سکانکرن</h3>
+            <div id="reader"></div>
+            <button class="nav-btn" style="background:var(--danger); color:white; margin-top:10px;" onclick="closeScanner()">داخستن</button>
         </div>
     </div>
 
-    <!-- Receipt Print -->
+    <!-- PRINT RECEIPT -->
     <div id="receipt-print" style="display: none;">
-        <h2 style="text-align: center;">پسۆلا مارکێتێ</h2>
+        <h3 style="text-align: center;">پسۆلا فرۆشتنێ</h3>
+        <p id="receipt-invoice-num" style="text-align:center; font-weight:bold;"></p>
         <p id="receipt-date" style="text-align:center; font-size:11px;"></p>
-        <p id="receipt-customer" style="text-align:center; font-size:12px; font-weight:bold;"></p>
-        <hr style="margin: 10px 0;">
+        <hr style="margin: 5px 0;">
         <div id="receipt-items"></div>
-        <hr style="margin: 10px 0;">
-        <h3 id="receipt-total-usd"></h3>
-        <h3 id="receipt-total-iqd"></h3>
-        <div id="receipt-change-details" style="margin-top: 5px;"></div>
+        <hr style="margin: 5px 0;">
+        <h4 id="receipt-total-usd"></h4>
+        <h4 id="receipt-total-iqd"></h4>
     </div>
 
+    <!-- LOGIC -->
     <script>
-        // --- 🔐 AUTHENTICATION SYSTEM ---
         let storedUser = localStorage.getItem('app_username') || "admin";
         let storedPass = localStorage.getItem('app_password') || "1234";
-        let secretPin = localStorage.getItem('app_secret_pin') || null;
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('login-user').value.trim();
-            const p = document.getElementById('login-pass').value.trim();
+        let invoiceCounter = parseInt(localStorage.getItem('invoice_counter')) || 1;
+        let selectedCategory = "هەموو";
 
-            if (u === storedUser && p === storedPass) {
-                if (!secretPin) {
-                    let newPin = prompt("تکایە پین کۆدەکێ ئیمناهیێ (Secret PIN) یێ تایبەت بۆ خۆ هەڵبژێرە ب تنێ ژ ژماران پێکهاتبیت:");
-                    if (newPin && newPin.trim() !== '') {
-                        secretPin = newPin.trim();
-                        localStorage.setItem('app_secret_pin', secretPin);
-                        alert("پین کۆدێ تە ب سەرکەفتیانە هاتە تۆمارکرن!");
-                    }
-                }
-                sessionStorage.setItem('isLoggedIn', 'true');
-                showApp();
-            } else {
-                alert("ناڤێ بەکارهێنەری یان پەیڤا نهێنی شاشە!");
-            }
-        }
-
-        function openChangeAuthModal() {
-            const currentPass = prompt("بۆ گوهۆڕینێ، سەرەتا پەیڤا نهێنی یا نوکە (Current Password) بنڤێسە:");
-            if (currentPass !== storedPass) return alert("پەیڤا نهێنی یا شاشە!");
-
-            const newUser = prompt("ناڤێ بەکارهێنەری یێ نۆی (New Username):", storedUser);
-            if (!newUser) return;
-
-            const newPass = prompt("پەیڤا نهێنی یا نۆی (New Password):");
-            if (!newPass) return;
-
-            const newPin = prompt("پین کۆدێ نوو یێ ئیمناهیێ (New Secret PIN):", secretPin || "");
-            
-            storedUser = newUser.trim();
-            storedPass = newPass.trim();
-            if (newPin) secretPin = newPin.trim();
-
-            localStorage.setItem('app_username', storedUser);
-            localStorage.setItem('app_password', storedPass);
-            if (secretPin) localStorage.setItem('app_secret_pin', secretPin);
-
-            alert("زانیاریێن چوونەژوورێ ب سەرکەفتیانە هاتنە گوهۆڕین!");
-        }
-
-        function handleForgotPassword(e) {
-            e.preventDefault();
-            if (!secretPin) return alert("هیچ پین کۆدەک نەهاتیە دروستکرن!");
-
-            const inputPin = prompt("تکایە پین کۆدێ ئەولەهیێ (Secret PIN) بنڤێسە:");
-            if (inputPin && inputPin.trim() === secretPin) {
-                alert(`زانیاریێن تە:\nUsername: ${storedUser}\nPassword: ${storedPass}`);
-            } else {
-                alert("پین کۆدێ هەڵە یە!");
-            }
-        }
-
-        function checkAdmin() {
-            const pwd = prompt("تکایە پەیڤا نهێنی یا رێڤەبەری بنڤێسە:");
-            if (pwd === storedPass) {
-                switchTab('admin');
-            } else {
-                alert("پەیڤا نهێنی شاشە!");
-            }
-        }
-
-        function showApp() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'flex';
-            renderProducts();
-            checkLowStockAlert();
-        }
-
-        function logout() {
-            sessionStorage.removeItem('isLoggedIn');
-            location.reload();
-        }
-
-        // --- POS DATA LOGIC ---
         let products = JSON.parse(localStorage.getItem('products_db')) || [
-            { barcode: '1001', name: 'ئاڤ (0.5L)', cost: 0.15, price: 0.25, stock: 50, sold: 0 },
-            { barcode: '1002', name: 'چبس لایز', cost: 0.35, price: 0.50, stock: 4, sold: 0 }
+            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 0.15, price: 0.25, stock: 40, expiry: '2026-12-01' },
+            { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 0.35, price: 0.50, stock: 5, expiry: '2026-09-20' }
         ];
 
         let cart = [];
@@ -555,24 +317,80 @@
         let debts = JSON.parse(localStorage.getItem('debts_db')) || [];
         let html5QrcodeScanner = null;
 
-        function checkLowStockAlert() {
-            const lowStock = products.some(p => p.stock <= 5);
-            document.getElementById('low-stock-alert').style.display = lowStock ? 'block' : 'none';
+        // KEYBOARD SHORTCUTS
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F2') {
+                e.preventDefault();
+                document.getElementById('search-input').focus();
+            }
+            if (e.code === 'Space' && cart.length > 0 && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                checkout(false);
+            }
+        });
+
+        function handleLogin(e) {
+            e.preventDefault();
+            if (document.getElementById('login-user').value === storedUser && document.getElementById('login-pass').value === storedPass) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                showApp();
+            } else { alert("زانیاری شاشن!"); }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            renderCategories();
+            renderProducts();
+        }
+
+        function logout() { sessionStorage.removeItem('isLoggedIn'); location.reload(); }
+
+        function checkAdmin() {
+            if (prompt("پەیڤا نهێنی بنڤێسە:") === storedPass) switchTab('admin');
+            else alert("شاشە!");
+        }
+
+        function renderCategories() {
+            const categories = ["هەموو", ...new Set(products.map(p => p.category || 'گشتی'))];
+            const bar = document.getElementById('category-bar');
+            bar.innerHTML = categories.map(c => `
+                <button class="cat-btn ${c === selectedCategory ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>
+            `).join('');
+        }
+
+        function filterCat(cat) {
+            selectedCategory = cat;
+            renderCategories();
+            renderProducts();
         }
 
         function renderProducts(items = products) {
             const container = document.getElementById('products-list');
-            if(!container) return;
             container.innerHTML = '';
-            items.forEach(p => {
+
+            let filtered = items;
+            if (selectedCategory !== "هەموو") {
+                filtered = items.filter(p => p.category === selectedCategory);
+            }
+
+            const today = new Date();
+
+            filtered.forEach(p => {
                 const isOutOfStock = p.stock <= 0;
-                const isLowStock = p.stock > 0 && p.stock <= 5;
+                let expWarning = false;
+                if (p.expiry) {
+                    const expDate = new Date(p.expiry);
+                    const diffDays = (expDate - today) / (1000 * 3600 * 24);
+                    if (diffDays <= 30 && diffDays >= 0) expWarning = true;
+                }
+
                 container.innerHTML += `
-                    <div class="product-card ${isOutOfStock ? 'out-of-stock' : (isLowStock ? 'low-stock' : '')}" onclick="addToCart('${p.barcode}')">
-                        <div class="barcode-tag">#${p.barcode}</div>
+                    <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''} ${expWarning ? 'exp-warning' : ''}" onclick="addToCart('${p.barcode}')">
                         <h4>${p.name}</h4>
-                        <div class="stock-tag">${isOutOfStock ? 'تەمام بوو!' : 'عەمبار: ' + p.stock}</div>
+                        <div style="font-size:11px; color:var(--text-muted);">${p.stock} دانە</div>
                         <div class="price">$${p.price.toFixed(2)}</div>
+                        ${expWarning ? `<div class="exp-tag">⚠️ نزیک بەسەرچوون</div>` : ''}
                     </div>
                 `;
             });
@@ -580,16 +398,13 @@
 
         function addToCart(barcode) {
             const product = products.find(p => p.barcode === barcode);
-            if (!product) return;
-            if (product.stock <= 0) return alert("ئەڤ کەلاپەلە د عەمبارێ دا نەما یە!");
+            if (!product || product.stock <= 0) return alert("مەوجود نینە!");
 
             const exist = cart.find(c => c.barcode === barcode);
             if (exist) {
-                if (exist.qty + 1 > product.stock) return alert("بڕا داخوازکری ژ عەمبارێ زێدەترە!");
+                if (exist.qty + 1 > product.stock) return alert("ژ عەمبارێ زێدەترە!");
                 exist.qty++;
-            } else {
-                cart.push({ ...product, qty: 1 });
-            }
+            } else { cart.push({ ...product, qty: 1 }); }
             updateCart();
         }
 
@@ -602,11 +417,8 @@
                 subtotal += item.price * item.qty;
                 container.innerHTML += `
                     <div class="cart-item">
+                        <div><strong>${item.name}</strong><br><small>$${item.price.toFixed(2)}</small></div>
                         <div>
-                            <strong>${item.name}</strong><br>
-                            <small>$${item.price.toFixed(2)} x ${item.qty}</small>
-                        </div>
-                        <div class="cart-item-actions">
                             <button class="btn-qty" onclick="changeQty(${index}, -1)">-</button>
                             <span>${item.qty}</span>
                             <button class="btn-qty" onclick="changeQty(${index}, 1)">+</button>
@@ -615,12 +427,20 @@
                 `;
             });
 
-            const discountPercent = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
-            const discountAmount = (subtotal * discountPercent) / 100;
-            const finalTotal = Math.max(0, subtotal - discountAmount);
+            const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
+            const finalTotal = Math.max(0, subtotal - (subtotal * discount / 100));
 
             document.getElementById('cart-total-usd').innerText = finalTotal.toFixed(2);
             calculateChange();
+        }
+
+        function changeQty(index, change) {
+            const item = cart[index];
+            const product = products.find(p => p.barcode === item.barcode);
+            if (change > 0 && item.qty + 1 > product.stock) return alert("عەمبار تێرا ناکەت!");
+            item.qty += change;
+            if (item.qty <= 0) cart.splice(index, 1);
+            updateCart();
         }
 
         function calculateChange() {
@@ -635,183 +455,68 @@
             document.getElementById('change-iqd').innerText = change > 0 ? Math.round(change).toLocaleString() : '0';
         }
 
-        function changeQty(index, change) {
-            const item = cart[index];
-            const product = products.find(p => p.barcode === item.barcode);
-
-            if (change > 0 && item.qty + 1 > product.stock) {
-                return alert("بڕا زێدەتر د عەمبارێ دا نینە!");
-            }
-
-            item.qty += change;
-            if (item.qty <= 0) cart.splice(index, 1);
-            updateCart();
-        }
-
         function handleSearch(e) {
             const val = document.getElementById('search-input').value.trim().toLowerCase();
             if (e.key === 'Enter' && val !== '') {
                 const matched = products.find(p => p.barcode === val);
-                if (matched) {
-                    addToCart(matched.barcode);
-                    document.getElementById('search-input').value = '';
-                    renderProducts();
-                    return;
-                }
+                if (matched) { addToCart(matched.barcode); document.getElementById('search-input').value = ''; return; }
             }
-            const filtered = products.filter(p => p.name.toLowerCase().includes(val) || p.barcode.includes(val));
-            renderProducts(filtered);
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(val) || p.barcode.includes(val)));
         }
 
-        // --- CHECKOUT & DEBT LOGIC ---
         function checkout(isDebt = false) {
-            if (cart.length === 0) return alert("سەبەتە یا بەتالە!");
+            if (cart.length === 0) return alert("سەبەتە بەتالە!");
 
-            let customerName = "";
+            let customerName = "نەقدی";
             if (isDebt) {
-                customerName = prompt("تکایە ناڤێ کریاری/قەرزداری بنڤێسە:");
-                if (!customerName || customerName.trim() === "") return alert("تۆمارکرنا قەرز بەتال بوو! پێویستە ناڤ بنڤێسی.");
+                customerName = prompt("ناڤێ قەرزداری بنڤێسە:");
+                if (!customerName) return;
             }
 
             let totalUSD = parseFloat(document.getElementById('cart-total-usd').innerText) || 0;
+            const formattedInvoiceNum = "INV-" + String(invoiceCounter).padStart(4, '0');
+            invoiceCounter++;
+            localStorage.setItem('invoice_counter', invoiceCounter);
+
             let receiptHTML = '';
-            const now = new Date();
-            const transactionId = 'REC-' + Date.now();
-
-            let currentSaleItems = [];
-
             cart.forEach(item => {
-                const pIndex = products.findIndex(p => p.barcode === item.barcode);
-                if (pIndex !== -1) {
-                    products[pIndex].sold += item.qty;
-                    products[pIndex].stock -= item.qty; 
-                }
+                const p = products.find(prod => prod.barcode === item.barcode);
+                if (p) { p.stock -= item.qty; }
 
-                const saleRecord = {
-                    txId: transactionId,
-                    barcode: item.barcode,
-                    name: item.name,
-                    qty: item.qty,
-                    cost: item.cost * item.qty,
-                    price: item.price * item.qty,
-                    profit: (item.price - item.cost) * item.qty,
-                    isDebt: isDebt,
-                    customer: isDebt ? customerName : 'Cash',
-                    timestamp: now.toISOString(),
-                    date: now.toLocaleString()
-                };
+                salesHistory.push({
+                    invoiceNum: formattedInvoiceNum,
+                    barcode: item.barcode, name: item.name, qty: item.qty,
+                    cost: item.cost * item.qty, price: item.price * item.qty,
+                    date: new Date().toLocaleString()
+                });
 
-                salesHistory.push(saleRecord);
-                currentSaleItems.push(saleRecord);
-
-                receiptHTML += `<p>${item.name} (x${item.qty}) - $${(item.price * item.qty).toFixed(2)}</p>`;
+                receiptHTML += `<p>${item.name} x${item.qty} - $${(item.price * item.qty).toFixed(2)}</p>`;
             });
 
             if (isDebt) {
-                debts.push({
-                    id: Date.now(),
-                    customer: customerName,
-                    amountUSD: totalUSD,
-                    date: now.toLocaleString(),
-                    status: 'Unpaid'
-                });
+                debts.push({ id: Date.now(), customer: customerName, amountUSD: totalUSD, date: new Date().toLocaleString(), status: 'Unpaid' });
                 localStorage.setItem('debts_db', JSON.stringify(debts));
             }
 
             localStorage.setItem('products_db', JSON.stringify(products));
             localStorage.setItem('sales_db', JSON.stringify(salesHistory));
 
-            const rate100 = parseFloat(document.getElementById('usd-rate').value) || 150000;
-            const totalIQD = (totalUSD / 100) * rate100;
-            const paidIQD = parseFloat(document.getElementById('paid-iqd').value) || 0;
-            const changeIQD = paidIQD - totalIQD;
-
-            document.getElementById('receipt-date').innerText = "دەم: " + now.toLocaleString();
-            document.getElementById('receipt-customer').innerText = isDebt ? "کریار (قەرز): " + customerName : "کریار: نەقدی";
+            document.getElementById('receipt-invoice-num').innerText = "ژمارەیا پسۆلێ: " + formattedInvoiceNum;
+            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
             document.getElementById('receipt-items').innerHTML = receiptHTML;
-            document.getElementById('receipt-total-usd').innerText = "کۆما گشتی ($): $" + totalUSD.toFixed(2);
-            document.getElementById('receipt-total-iqd').innerText = "کۆما گشتی (IQD): " + Math.round(totalIQD).toLocaleString() + " IQD";
-            
-            if (!isDebt && paidIQD > 0) {
-                document.getElementById('receipt-change-details').innerHTML = `
-                    <p>بڕا وەرگرتی: ${Math.round(paidIQD).toLocaleString()} IQD</p>
-                    <p>بەقیا: ${changeIQD > 0 ? Math.round(changeIQD).toLocaleString() : 0} IQD</p>
-                `;
-            } else {
-                document.getElementById('receipt-change-details').innerHTML = '';
-            }
-
-            const printFormat = document.getElementById('print-format').value;
-            document.body.className = printFormat === 'a4' ? 'print-a4' : 'print-thermal';
+            document.getElementById('receipt-total-usd').innerText = "کۆم: $" + totalUSD.toFixed(2);
 
             window.print();
 
             cart = [];
             document.getElementById('paid-iqd').value = '';
-            document.getElementById('cart-discount-percent').value = '0';
             updateCart();
             renderProducts();
-            checkLowStockAlert();
-            alert(isDebt ? "قەرز ب سەرکەفتیانە هاتە تۆمارکرن!" : "فرۆشتن ب سەرکەفتیانە تەمام بوو!");
-        }
-
-        // --- DASHBOARD FILTERS & STATS ---
-        function toggleFilterType() {
-            const type = document.getElementById('filter-type').value;
-            document.getElementById('monthly-select-group').style.display = type === 'monthly' ? 'block' : 'none';
-            document.getElementById('yearly-select-group').style.display = type === 'yearly' ? 'block' : 'none';
-            document.getElementById('custom-range-group').style.display = type === 'custom' ? 'flex' : 'none';
-
-            if (type === 'monthly' && !document.getElementById('filter-month').value) {
-                const now = new Date();
-                const m = String(now.getMonth() + 1).padStart(2, '0');
-                document.getElementById('filter-month').value = `${now.getFullYear()}-${m}`;
-            }
-            if (type === 'yearly' && !document.getElementById('filter-year').value) {
-                document.getElementById('filter-year').value = new Date().getFullYear();
-            }
-
-            updateAdminStats();
-        }
-
-        function getFilteredSales() {
-            const type = document.getElementById('filter-type').value;
-
-            return salesHistory.filter(s => {
-                if (!s.timestamp) return type === 'all';
-                const date = new Date(s.timestamp);
-
-                if (type === 'monthly') {
-                    const selectedMonth = document.getElementById('filter-month').value; 
-                    if (!selectedMonth) return true;
-                    const [year, month] = selectedMonth.split('-');
-                    return date.getFullYear() == year && (date.getMonth() + 1) == parseInt(month);
-                } else if (type === 'yearly') {
-                    const selectedYear = document.getElementById('filter-year').value;
-                    if (!selectedYear) return true;
-                    return date.getFullYear() == selectedYear;
-                } else if (type === 'custom') {
-                    const start = document.getElementById('filter-start-date').value;
-                    const end = document.getElementById('filter-end-date').value;
-                    if (!start || !end) return true;
-                    const startDate = new Date(start);
-                    const endDate = new Date(end);
-                    endDate.setHours(23, 59, 59);
-                    return date >= startDate && date <= endDate;
-                }
-                return true;
-            });
         }
 
         function updateAdminStats() {
-            const filteredSales = getFilteredSales();
-
             let sales = 0, cost = 0;
-            filteredSales.forEach(s => { 
-                sales += s.price; 
-                cost += s.cost; 
-            });
-
+            salesHistory.forEach(s => { sales += s.price; cost += s.cost; });
             let totalDebtSum = debts.filter(d => d.status === 'Unpaid').reduce((acc, d) => acc + d.amountUSD, 0);
 
             document.getElementById('total-sales').innerText = `$${sales.toFixed(2)}`;
@@ -820,22 +525,18 @@
             document.getElementById('total-debts').innerText = `$${totalDebtSum.toFixed(2)}`;
 
             renderDebts();
-            renderSalesHistory();
 
             const tbody = document.getElementById('admin-products-body');
             tbody.innerHTML = '';
-
             products.forEach(p => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${p.name}</td>
+                        <td>${p.category || 'گشتی'}</td>
                         <td>${p.stock}</td>
-                        <td>$${p.cost.toFixed(2)}</td>
+                        <td>${p.expiry || '-'}</td>
                         <td>$${p.price.toFixed(2)}</td>
-                        <td>
-                            <button class="btn-action btn-edit" onclick="editProduct('${p.barcode}')">دەستکاری</button>
-                            <button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button>
-                        </td>
+                        <td><button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button></td>
                     </tr>
                 `;
             });
@@ -843,160 +544,73 @@
 
         function renderDebts() {
             const tbody = document.getElementById('debts-table-body');
-            const searchVal = document.getElementById('debt-search') ? document.getElementById('debt-search').value.toLowerCase() : '';
             tbody.innerHTML = '';
-
-            debts.filter(d => d.customer.toLowerCase().includes(searchVal)).forEach((d, idx) => {
+            debts.forEach(d => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${d.customer}</td>
                         <td>$${d.amountUSD.toFixed(2)}</td>
                         <td>${d.date}</td>
-                        <td style="color:${d.status === 'Paid' ? 'var(--success)' : 'var(--danger)'}">${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</td>
+                        <td>${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</td>
                         <td>
-                            ${d.status === 'Unpaid' ? `<button class="btn-action btn-sec" onclick="payDebt(${d.id})">دان ب تەمامی</button>` : '✔️'}
+                            ${d.status === 'Unpaid' ? `
+                                <button class="btn-action btn-sec" onclick="payPartialDebt(${d.id})">دان ب بەشەکی</button>
+                                <button class="btn-action btn-edit" onclick="payFullDebt(${d.id})">تەمام</button>
+                            ` : '✔️'}
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function payDebt(id) {
-            const debtIndex = debts.findIndex(d => d.id === id);
-            if (debtIndex !== -1) {
-                debts[debtIndex].status = 'Paid';
-                localStorage.setItem('debts_db', JSON.stringify(debts));
-                updateAdminStats();
-                alert("قەرز ب سەرکەفتیانە وەک داندریا هاتە تۆمارکرن!");
+        function payPartialDebt(id) {
+            const d = debts.find(debt => debt.id === id);
+            if (d) {
+                let pay = parseFloat(prompt(`بڕێ دانى بنڤێسە (کۆما قەرزی: $${d.amountUSD.toFixed(2)}):`));
+                if (pay && pay > 0 && pay <= d.amountUSD) {
+                    d.amountUSD -= pay;
+                    if (d.amountUSD === 0) d.status = 'Paid';
+                    localStorage.setItem('debts_db', JSON.stringify(debts));
+                    updateAdminStats();
+                }
             }
         }
 
-        function renderSalesHistory() {
-            const tbody = document.getElementById('sales-history-body');
-            tbody.innerHTML = '';
-
-            const groupedSales = {};
-            salesHistory.forEach(s => {
-                const key = s.txId || s.date;
-                if (!groupedSales[key]) {
-                    groupedSales[key] = { txId: key, date: s.date, total: 0, items: [] };
-                }
-                groupedSales[key].total += s.price;
-                groupedSales[key].items.push(s);
-            });
-
-            Object.values(groupedSales).reverse().slice(0, 15).forEach(group => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${group.txId.slice(-8)}</td>
-                        <td>$${group.total.toFixed(2)}</td>
-                        <td>${group.date}</td>
-                        <td><button class="btn-action btn-sec" onclick="reprintReceipt('${group.txId}')">چاپکرنەوە 🖨️</button></td>
-                    </tr>
-                `;
-            });
+        function payFullDebt(id) {
+            const d = debts.find(debt => debt.id === id);
+            if (d) { d.amountUSD = 0; d.status = 'Paid'; localStorage.setItem('debts_db', JSON.stringify(debts)); updateAdminStats(); }
         }
 
-        function reprintReceipt(txId) {
-            const items = salesHistory.filter(s => (s.txId || s.date) === txId);
-            if (items.length === 0) return alert("پسۆل نەهاتە لێدوان!");
+        function saveProduct(e) {
+            e.preventDefault();
+            const barcode = document.getElementById('prod-barcode').value.trim();
+            const name = document.getElementById('prod-name').value.trim();
+            const category = document.getElementById('prod-category').value;
+            const stock = parseInt(document.getElementById('prod-stock').value);
+            const expiry = document.getElementById('prod-expiry').value;
+            const cost = parseFloat(document.getElementById('prod-cost').value);
+            const price = parseFloat(document.getElementById('prod-price').value);
 
-            let receiptHTML = '';
-            let totalUSD = 0;
-            items.forEach(i => {
-                totalUSD += i.price;
-                receiptHTML += `<p>${i.name} (x${i.qty}) - $${i.price.toFixed(2)}</p>`;
-            });
+            products.push({ barcode, name, category, stock, expiry, cost, price });
+            localStorage.setItem('products_db', JSON.stringify(products));
 
-            const rate100 = parseFloat(document.getElementById('usd-rate').value) || 150000;
-            const totalIQD = (totalUSD / 100) * rate100;
-
-            document.getElementById('receipt-date').innerText = "دەمی چاپکرنەوە: " + new Date().toLocaleString();
-            document.getElementById('receipt-customer').innerText = items[0].isDebt ? "کریار (قەرز): " + items[0].customer : "کریار: نەقدی";
-            document.getElementById('receipt-items').innerHTML = receiptHTML;
-            document.getElementById('receipt-total-usd').innerText = "کۆما گشتی ($): $" + totalUSD.toFixed(2);
-            document.getElementById('receipt-total-iqd').innerText = "کۆما گشتی (IQD): " + Math.round(totalIQD).toLocaleString() + " IQD";
-            document.getElementById('receipt-change-details').innerHTML = '';
-
-            window.print();
+            document.getElementById('product-form').reset();
+            renderCategories();
+            renderProducts();
+            updateAdminStats();
+            alert("کەلاپەل هاتە زێدەکرن!");
         }
 
-        function exportToExcel() {
-            const filteredSales = getFilteredSales();
-            if (filteredSales.length === 0) return alert("هیچ داتایەک نینە!");
-
-            let csvContent = "\uFEFF"; 
-            csvContent += "Barcode,Item Name,Customer,Quantity,Cost ($),Sales ($),Profit ($),Date\n";
-
-            filteredSales.forEach(s => {
-                const profit = s.profit !== undefined ? s.profit : (s.price - s.cost);
-                csvContent += `"${s.barcode}","${s.name}","${s.customer || 'Cash'}",${s.qty},${s.cost.toFixed(2)},${s.price.toFixed(2)},${profit.toFixed(2)},"${s.date}"\n`;
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Report_Sales_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ products, salesHistory, debts }));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `backup_pos_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function importData(e) {
-            const fileReader = new FileReader();
-            fileReader.onload = function(event) {
-                try {
-                    const parsed = JSON.parse(event.target.result);
-                    if (parsed.products && parsed.salesHistory) {
-                        products = parsed.products;
-                        salesHistory = parsed.salesHistory;
-                        if(parsed.debts) debts = parsed.debts;
-
-                        localStorage.setItem('products_db', JSON.stringify(products));
-                        localStorage.setItem('sales_db', JSON.stringify(salesHistory));
-                        localStorage.setItem('debts_db', JSON.stringify(debts));
-
-                        renderProducts();
-                        updateAdminStats();
-                        alert("داتا ب سەرکەفتیانە هاتنە ڤەگەڕاندن!");
-                    }
-                } catch (err) {
-                    alert("فایلا نەگونجایە!");
-                }
-            };
-            fileReader.readAsText(e.target.files[0]);
-        }
-
-        function openScanner() {
-            document.getElementById('scanner-modal').style.display = 'flex';
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-            html5QrcodeScanner.render((decodedText) => {
-                addToCart(decodedText);
-                closeScanner();
-            });
-        }
-
-        function closeScanner() {
-            if (html5QrcodeScanner) html5QrcodeScanner.clear();
-            document.getElementById('scanner-modal').style.display = 'none';
+        function deleteProduct(barcode) {
+            products = products.filter(p => p.barcode !== barcode);
+            localStorage.setItem('products_db', JSON.stringify(products));
+            renderProducts();
+            updateAdminStats();
         }
 
         function switchTab(tab) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
             if (tab === 'pos') {
                 document.getElementById('pos-tab').classList.add('active');
                 document.querySelectorAll('.nav-btn')[0].classList.add('active');
@@ -1007,89 +621,14 @@
             }
         }
 
-        function deleteProduct(barcode) {
-            if (confirm("ئەرێ تۆ ب ڕاستی دتەوێت ڤی کەلاپەلی بسڕیەوە؟")) {
-                products = products.filter(p => p.barcode !== barcode);
-                localStorage.setItem('products_db', JSON.stringify(products));
-                renderProducts();
-                updateAdminStats();
-                checkLowStockAlert();
-            }
+        function openScanner() {
+            document.getElementById('scanner-modal').style.display = 'flex';
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render((decodedText) => { addToCart(decodedText); closeScanner(); });
         }
+        function closeScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); document.getElementById('scanner-modal').style.display = 'none'; }
 
-        function editProduct(barcode) {
-            const p = products.find(prod => prod.barcode === barcode);
-            if (!p) return;
-
-            document.getElementById('prod-barcode').value = p.barcode;
-            document.getElementById('prod-barcode').readOnly = true;
-            document.getElementById('prod-name').value = p.name;
-            document.getElementById('prod-stock').value = p.stock;
-            document.getElementById('prod-cost').value = p.cost;
-            document.getElementById('prod-cost-curr').value = "USD";
-            document.getElementById('prod-price').value = p.price;
-            document.getElementById('prod-price-curr').value = "USD";
-
-            document.getElementById('edit-mode').value = "true";
-            document.getElementById('form-title').innerText = "دەستکاریکرنا کەلاپەلی";
-            document.getElementById('btn-submit-prod').innerText = "نووژەنکرنەوە (Save)";
-            document.getElementById('btn-cancel-edit').style.display = "block";
-        }
-
-        function resetForm() {
-            document.getElementById('product-form').reset();
-            document.getElementById('prod-barcode').readOnly = false;
-            document.getElementById('edit-mode').value = "false";
-            document.getElementById('form-title').innerText = "زێدەکرنا کەلاپەلەکێ نۆی";
-            document.getElementById('btn-submit-prod').innerText = "زێدەبکە";
-            document.getElementById('btn-cancel-edit').style.display = "none";
-        }
-
-        function saveProduct(e) {
-            e.preventDefault();
-            const isEdit = document.getElementById('edit-mode').value === "true";
-            const barcode = document.getElementById('prod-barcode').value.trim();
-            const name = document.getElementById('prod-name').value.trim();
-            const stock = parseInt(document.getElementById('prod-stock').value);
-            
-            let rawCost = parseFloat(document.getElementById('prod-cost').value);
-            const costCurr = document.getElementById('prod-cost-curr').value;
-            
-            let rawPrice = parseFloat(document.getElementById('prod-price').value);
-            const priceCurr = document.getElementById('prod-price-curr').value;
-
-            const rate100 = parseFloat(document.getElementById('usd-rate').value) || 150000;
-            const singleDollarRate = rate100 / 100;
-
-            const cost = costCurr === 'IQD' ? (rawCost / singleDollarRate) : rawCost;
-            const price = priceCurr === 'IQD' ? (rawPrice / singleDollarRate) : rawPrice;
-
-            if (isEdit) {
-                const idx = products.findIndex(p => p.barcode === barcode);
-                if (idx !== -1) {
-                    products[idx] = { ...products[idx], name, stock, cost, price };
-                }
-                alert("زانیاریێن کەلاپەلی هاتنە نووژەنکرن!");
-            } else {
-                if (products.some(p => p.barcode === barcode)) {
-                    return alert("ئەڤ بارکۆدە بەری نوکە هاتبوو تۆمارکرن!");
-                }
-                products.push({ barcode, name, stock, cost, price, sold: 0 });
-                alert("کەلاپەل هاتە زێدەکرن!");
-            }
-
-            localStorage.setItem('products_db', JSON.stringify(products));
-            resetForm();
-            renderProducts();
-            updateAdminStats();
-            checkLowStockAlert();
-        }
-
-        window.onload = function() {
-            if (sessionStorage.getItem('isLoggedIn') === 'true') {
-                showApp();
-            }
-        };
+        window.onload = function() { if (sessionStorage.getItem('isLoggedIn') === 'true') showApp(); };
     </script>
 </body>
 </html>
