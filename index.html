@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستەمێ کاشێریێ یێ پێشکەفتی یێ گشتی</title>
+    <!-- HTML5 QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
@@ -78,11 +79,14 @@
         .btn-debt { background: var(--warning); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; }
 
         .payment-calc { background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border); }
-        .payment-calc input { width: 100%; padding: 7px; margin-top: 4px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
+        .payment-calc input, .payment-calc select { width: 100%; padding: 7px; margin-top: 4px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
         /* Admin UI */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: 14px; }
+
+        .filter-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 14px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filter-card input, .filter-card select { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
         .admin-flex { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
         table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
@@ -93,10 +97,17 @@
         .btn-delete { background: var(--danger); }
         .btn-edit { background: var(--warning); }
         .btn-sec { background: var(--accent-color); }
+        .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
 
         .form-control { margin-bottom: 10px; }
         .form-control label { display: block; margin-bottom: 3px; font-size: 13px; }
         .form-control input, .form-control select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; }
+
+        /* Low Stock Warning Section */
+        .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 12px; padding: 12px; margin-bottom: 20px; }
+
+        /* Backup Controls */
+        .backup-card { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent-color); padding: 15px; border-radius: 12px; margin-top: 20px; display: flex; gap: 10px; align-items: center; }
 
         /* Scanner Modal */
         #scanner-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
@@ -112,6 +123,7 @@
 </head>
 <body>
 
+    <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-card">
             <h2>چوونەژووریا کاشێریێ</h2>
@@ -124,6 +136,7 @@
         </div>
     </div>
 
+    <!-- MAIN CONTAINER -->
     <div id="app-container" style="display: none;">
         <div class="sidebar">
             <div class="sidebar-top">
@@ -141,6 +154,7 @@
         </div>
 
         <div class="main-content">
+            <!-- POS TAB -->
             <div id="pos-tab" class="section active">
                 <div class="pos-grid">
                     <div class="products-section">
@@ -149,6 +163,7 @@
                             <button class="nav-btn" style="width:auto; margin:0;" onclick="openScanner()">📷</button>
                         </div>
                         
+                        <!-- CURRENCY TOGGLE BAR -->
                         <div class="currency-switch">
                             <span style="font-size:13px; font-weight:bold;">دراڤێ دیارکرنێ (Currency):</span>
                             <select id="currency-select" onchange="updateAllDisplays()">
@@ -157,6 +172,7 @@
                             </select>
                         </div>
 
+                        <!-- CATEGORY FILTER BAR -->
                         <div class="cat-bar" id="category-bar"></div>
 
                         <div class="products-cards" id="products-list"></div>
@@ -171,8 +187,14 @@
                         <h3>پارەدان</h3>
                         <div>
                             <div class="payment-calc">
-                                <label style="font-size:11px;">داشکان (%):</label>
-                                <input type="number" id="cart-discount-percent" value="0" oninput="updateCart()">
+                                <label style="font-size:11px;">جۆرێ داشکانێ:</label>
+                                <div style="display:flex; gap:5px;">
+                                    <select id="discount-type" onchange="updateCart()">
+                                        <option value="percent">% سەدی</option>
+                                        <option value="fixed">پارێ نەقدی (Fixed)</option>
+                                    </select>
+                                    <input type="number" id="cart-discount-value" value="0" oninput="updateCart()">
+                                </div>
                             </div>
                             <div style="font-weight: bold; margin-top:5px; font-size:16px; color:var(--success);">کۆم: <span id="cart-total-primary">0</span></div>
 
@@ -189,9 +211,30 @@
                 </div>
             </div>
 
+            <!-- ADMIN TAB -->
             <div id="admin-tab" class="section">
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
+
+                <!-- DATE FILTER -->
+                <div class="filter-card">
+                    <label>فیلتەرکرنا راپۆرتان ب بەروار:</label>
+                    <select id="report-filter-type" onchange="toggleCustomDates()">
+                        <option value="all">هەموو مێژوو</option>
+                        <option value="today">ئەڤڕۆ</option>
+                        <option value="month">ئەڤ مەهە</option>
+                        <option value="custom">دیارکرنا بەرواری</option>
+                    </select>
+
+                    <div id="custom-date-inputs" style="display: none; gap: 5px;">
+                        <input type="date" id="filter-start-date">
+                        <input type="date" id="filter-end-date">
+                    </div>
+
+                    <button class="btn-action btn-sec" onclick="updateAdminStats()">جێبەجێکرن</button>
+                    <button class="btn-excel" onclick="exportSalesToExcel()">📊 دەرئینانا فرۆشتنان بۆ Excel</button>
+                </div>
+
                 <div class="stats-grid">
                     <div class="stat-card"><h3>کۆما فرۆشتنان</h3><p id="total-sales">0</p></div>
                     <div class="stat-card"><h3>کۆما تێچووی</h3><p id="total-cost">0</p></div>
@@ -199,8 +242,21 @@
                     <div class="stat-card"><h3>کۆما قەرزان</h3><p id="total-debts" style="color:var(--warning);">0</p></div>
                 </div>
 
+                <!-- LOW STOCK WARNING BOX -->
+                <div class="warning-box" id="low-stock-box" style="display:none;">
+                    <h3 style="color:var(--warning);">⚠️ ئاگەهداری: کەلاپەلێن بەر ب کێمبوونێ دچن (ژ ٥ دانەیان کێمتر)</h3>
+                    <ul id="low-stock-list" style="margin-right:20px; margin-top:8px;"></ul>
+                </div>
+
+                <!-- DEBT MANAGEMENT -->
                 <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3>لیستا قەرزداران</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>لیستا قەرزداران</h3>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="debt-search" placeholder="لێگەڕیان ب ناڤێ قەرزداری..." oninput="renderDebts()" style="padding:6px; border-radius:6px; border:1px solid var(--border); background:var(--bg-color); color:white;">
+                            <button class="btn-excel" onclick="exportDebtsToExcel()">📊 Excel قەرزان</button>
+                        </div>
+                    </div>
                     <br>
                     <table>
                         <thead>
@@ -218,7 +274,10 @@
 
                 <div class="admin-flex">
                     <div>
-                        <h3>عەمبار & کەلاپەل</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>عەمبار & کەلاپەل</h3>
+                            <button class="btn-excel" onclick="exportProductsToExcel()">📊 Excel عەمبار</button>
+                        </div>
                         <br>
                         <table>
                             <thead>
@@ -274,12 +333,22 @@
                             </div>
                             <button type="submit" class="btn-checkout">تۆمارکرن</button>
                         </form>
+
+                        <!-- BACKUP & RESTORE CONTROLS -->
+                        <div class="backup-card">
+                            <button class="btn-action btn-sec" onclick="exportBackupJSON()">💾 دابەزاندنا Backup</button>
+                            <label class="btn-action btn-edit" style="cursor:pointer;">
+                                📥 گێڕانەڤە (Restore)
+                                <input type="file" id="import-json" accept=".json" onchange="importBackupJSON(event)" style="display:none;">
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- SCANNER MODAL -->
     <div id="scanner-modal">
         <div class="scanner-box">
             <h3>سکانکرن</h3>
@@ -288,6 +357,7 @@
         </div>
     </div>
 
+    <!-- PRINT RECEIPT -->
     <div id="receipt-print" style="display: none;">
         <h3 style="text-align: center;">پسۆلا فرۆشتنێ</h3>
         <p id="receipt-invoice-num" style="text-align:center; font-weight:bold;"></p>
@@ -298,6 +368,7 @@
         <h4 id="receipt-total"></h4>
     </div>
 
+    <!-- LOGIC -->
     <script>
         let storedUser = localStorage.getItem('app_username') || "admin";
         let storedPass = localStorage.getItem('app_password') || "1234";
@@ -307,7 +378,7 @@
 
         // Stores Prices in IQD natively
         let products = JSON.parse(localStorage.getItem('products_db')) || [
-            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 250, price: 500, stock: 40, expiry: '2026-12-01' },
+            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 250, price: 500, stock: 4, expiry: '2026-12-01' },
             { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 500, price: 750, stock: 15, expiry: '2026-09-20' }
         ];
 
@@ -406,7 +477,7 @@
                     <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''} ${expWarning ? 'exp-warning' : ''}" onclick="addToCart('${p.barcode}')">
                         <h4>${p.name}</h4>
                         <div style="font-size:11px; color:var(--text-muted);">${p.stock} دانە</div>
-                        <div class="price">${formatPrice(p.price)}</div>
+                        <div class="price">${formatPrice(p.price || 0)}</div>
                         ${expWarning ? `<div class="exp-tag">⚠️ نزیک بەسەرچوون</div>` : ''}
                     </div>
                 `;
@@ -431,10 +502,10 @@
             let subtotal = 0;
 
             cart.forEach((item, index) => {
-                subtotal += item.price * item.qty;
+                subtotal += (item.price || 0) * item.qty;
                 container.innerHTML += `
                     <div class="cart-item">
-                        <div><strong>${item.name}</strong><br><small>${formatPrice(item.price)}</small></div>
+                        <div><strong>${item.name}</strong><br><small>${formatPrice(item.price || 0)}</small></div>
                         <div>
                             <button class="btn-qty" onclick="changeQty(${index}, -1)">-</button>
                             <span>${item.qty}</span>
@@ -444,8 +515,19 @@
                 `;
             });
 
-            const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
-            const finalTotal = Math.max(0, subtotal - (subtotal * discount / 100));
+            const discountType = document.getElementById('discount-type').value;
+            const discountVal = parseFloat(document.getElementById('cart-discount-value').value) || 0;
+            const curr = getCurrentCurrency();
+
+            let finalTotal = subtotal;
+
+            if (discountType === 'percent') {
+                finalTotal = Math.max(0, subtotal - (subtotal * discountVal / 100));
+            } else {
+                let fixedDiscountIQD = discountVal;
+                if (curr === 'USD') fixedDiscountIQD = discountVal * (getExchangeRate() / 100);
+                finalTotal = Math.max(0, subtotal - fixedDiscountIQD);
+            }
 
             document.getElementById('cart-total-primary').innerText = formatPrice(finalTotal);
             calculateChange();
@@ -461,12 +543,21 @@
         }
 
         function calculateChange() {
-            let subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-            const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
-            const finalTotalIQD = Math.max(0, subtotal - (subtotal * discount / 100));
+            let subtotal = cart.reduce((acc, i) => acc + ((i.price || 0) * i.qty), 0);
+            const discountType = document.getElementById('discount-type').value;
+            const discountVal = parseFloat(document.getElementById('cart-discount-value').value) || 0;
+            const curr = getCurrentCurrency();
+
+            let finalTotalIQD = subtotal;
+            if (discountType === 'percent') {
+                finalTotalIQD = Math.max(0, subtotal - (subtotal * discountVal / 100));
+            } else {
+                let fixedDiscountIQD = discountVal;
+                if (curr === 'USD') fixedDiscountIQD = discountVal * (getExchangeRate() / 100);
+                finalTotalIQD = Math.max(0, subtotal - fixedDiscountIQD);
+            }
 
             const paidAmount = parseFloat(document.getElementById('paid-amount').value) || 0;
-            const curr = getCurrentCurrency();
 
             let change = 0;
             if (curr === 'USD') {
@@ -505,9 +596,19 @@
                 if (!customerName) return;
             }
 
-            let subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-            const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
-            const finalTotalIQD = Math.max(0, subtotal - (subtotal * discount / 100));
+            let subtotal = cart.reduce((acc, i) => acc + ((i.price || 0) * i.qty), 0);
+            const discountType = document.getElementById('discount-type').value;
+            const discountVal = parseFloat(document.getElementById('cart-discount-value').value) || 0;
+            const curr = getCurrentCurrency();
+
+            let finalTotalIQD = subtotal;
+            if (discountType === 'percent') {
+                finalTotalIQD = Math.max(0, subtotal - (subtotal * discountVal / 100));
+            } else {
+                let fixedDiscountIQD = discountVal;
+                if (curr === 'USD') fixedDiscountIQD = discountVal * (getExchangeRate() / 100);
+                finalTotalIQD = Math.max(0, subtotal - fixedDiscountIQD);
+            }
 
             const formattedInvoiceNum = "INV-" + String(invoiceCounter).padStart(4, '0');
             invoiceCounter++;
@@ -521,11 +622,11 @@
                 salesHistory.push({
                     invoiceNum: formattedInvoiceNum,
                     barcode: item.barcode, name: item.name, qty: item.qty,
-                    cost: item.cost * item.qty, price: item.price * item.qty,
-                    date: new Date().toLocaleString()
+                    cost: (item.cost || 0) * item.qty, price: (item.price || 0) * item.qty,
+                    date: new Date().toISOString()
                 });
 
-                receiptHTML += `<p>${item.name} x${item.qty} - ${formatPrice(item.price * item.qty)}</p>`;
+                receiptHTML += `<p>${item.name} x${item.qty} - ${formatPrice((item.price || 0) * item.qty)}</p>`;
             });
 
             if (isDebt) {
@@ -549,16 +650,57 @@
             renderProducts();
         }
 
+        function toggleCustomDates() {
+            const filterType = document.getElementById('report-filter-type').value;
+            document.getElementById('custom-date-inputs').style.display = filterType === 'custom' ? 'flex' : 'none';
+        }
+
+        function filterSalesByDate() {
+            const filterType = document.getElementById('report-filter-type').value;
+            const now = new Date();
+
+            return salesHistory.filter(s => {
+                const sDate = new Date(s.date);
+
+                if (filterType === 'today') {
+                    return sDate.toDateString() === now.toDateString();
+                } else if (filterType === 'month') {
+                    return sDate.getMonth() === now.getMonth() && sDate.getFullYear() === now.getFullYear();
+                } else if (filterType === 'custom') {
+                    const start = new Date(document.getElementById('filter-start-date').value);
+                    const end = new Date(document.getElementById('filter-end-date').value);
+                    if (!isNaN(start) && !isNaN(end)) {
+                        end.setHours(23, 59, 59);
+                        return sDate >= start && sDate <= end;
+                    }
+                }
+                return true;
+            });
+        }
+
         function updateAdminStats() {
+            let filteredSales = filterSalesByDate();
+
             let sales = 0, cost = 0;
-            salesHistory.forEach(s => { sales += s.price; cost += s.cost; });
-            let totalDebtSum = debts.filter(d => d.status === 'Unpaid').reduce((acc, d) => acc + d.amountIQD, 0);
+            filteredSales.forEach(s => { 
+                sales += (s.price || 0); 
+                cost += (s.cost || 0); 
+            });
+
+            let totalDebtSum = debts.filter(d => d.status === 'Unpaid').reduce((acc, d) => {
+                let amount = d.amountIQD;
+                if (amount === undefined || amount === null) {
+                    amount = (d.amountUSD || 0) * (getExchangeRate() / 100);
+                }
+                return acc + amount;
+            }, 0);
 
             document.getElementById('total-sales').innerText = formatPrice(sales);
             document.getElementById('total-cost').innerText = formatPrice(cost);
             document.getElementById('net-profit').innerText = formatPrice(sales - cost);
             document.getElementById('total-debts').innerText = formatPrice(totalDebtSum);
 
+            checkLowStock();
             renderDebts();
 
             const tbody = document.getElementById('admin-products-body');
@@ -570,21 +712,41 @@
                         <td>${p.category || 'گشتی'}</td>
                         <td>${p.stock}</td>
                         <td>${p.expiry || '-'}</td>
-                        <td>${formatPrice(p.price)}</td>
+                        <td>${formatPrice(p.price || 0)}</td>
                         <td><button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button></td>
                     </tr>
                 `;
             });
         }
 
+        function checkLowStock() {
+            const lowStockList = products.filter(p => p.stock < 5);
+            const box = document.getElementById('low-stock-box');
+            const list = document.getElementById('low-stock-list');
+
+            if (lowStockList.length > 0) {
+                box.style.display = 'block';
+                list.innerHTML = lowStockList.map(p => `<li><strong>${p.name}</strong> - تەنێ (${p.stock}) دانە ماینە!</li>`).join('');
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
         function renderDebts() {
+            const searchVal = document.getElementById('debt-search') ? document.getElementById('debt-search').value.toLowerCase() : '';
             const tbody = document.getElementById('debts-table-body');
             tbody.innerHTML = '';
-            debts.forEach(d => {
+
+            debts.filter(d => d.customer.toLowerCase().includes(searchVal)).forEach(d => {
+                let currentAmount = d.amountIQD;
+                if (currentAmount === undefined || currentAmount === null) {
+                    currentAmount = (d.amountUSD || 0) * (getExchangeRate() / 100);
+                }
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${d.customer}</td>
-                        <td>${formatPrice(d.amountIQD)}</td>
+                        <td>${formatPrice(currentAmount)}</td>
                         <td>${d.date}</td>
                         <td>${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</td>
                         <td>
@@ -601,12 +763,10 @@
         function payPartialDebt(id) {
             const d = debts.find(debt => debt.id === id);
             if (d) {
-                let pay = parseFloat(prompt(`بڕێ دانى بنڤێسە (کۆما قەرزی: ${formatPrice(d.amountIQD)}):\n* تێبینی: ب گوێرەی دراڤێ نوکە هەڵبژارتی (IQD/USD) بنڤێسە.`));
+                let pay = parseFloat(prompt(`بڕێ دانى بنڤێسە (کۆما قەرزی: ${formatPrice(d.amountIQD)}):\n* ب گوێرەی دراڤێ نوکە هەڵبژارتی بنڤێسە.`));
                 const curr = getCurrentCurrency();
                 let payInIQD = pay;
-                if (curr === 'USD') {
-                    payInIQD = pay * (getExchangeRate() / 100);
-                }
+                if (curr === 'USD') payInIQD = pay * (getExchangeRate() / 100);
 
                 if (payInIQD && payInIQD > 0 && payInIQD <= d.amountIQD) {
                     d.amountIQD -= payInIQD;
@@ -647,6 +807,80 @@
             localStorage.setItem('products_db', JSON.stringify(products));
             renderProducts();
             updateAdminStats();
+        }
+
+        // EXPORT TO EXCEL / CSV FUNCTIONS
+        function downloadCSV(csvContent, fileName) {
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportSalesToExcel() {
+            let csv = "ژمارەیا پسۆلێ,کەلاپەل,ژمارە,تێچوو (IQD),فرۆشتن (IQD),بەروار\n";
+            filterSalesByDate().forEach(s => {
+                csv += `"${s.invoiceNum}","${s.name}",${s.qty},${s.cost},${s.price},"${s.date}"\n`;
+            });
+            downloadCSV(csv, `Sales_Report_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        function exportProductsToExcel() {
+            let csv = "بارکۆد,ناڤ,کاتۆگۆری,عەمبار,تێچوو (IQD),فرۆشتن (IQD),بەسەرچوون\n";
+            products.forEach(p => {
+                csv += `"${p.barcode}","${p.name}","${p.category || 'گشتی'}",${p.stock},${p.cost},${p.price},"${p.expiry || ''}"\n`;
+            });
+            downloadCSV(csv, `Inventory_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        function exportDebtsToExcel() {
+            let csv = "کریار,بڕێ قەرزی (IQD),بارودۆخ,بەروار\n";
+            debts.forEach(d => {
+                csv += `"${d.customer}",${d.amountIQD},"${d.status}","${d.date}"\n`;
+            });
+            downloadCSV(csv, `Debts_Report_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        // BACKUP & RESTORE JSON
+        function exportBackupJSON() {
+            const data = { products, salesHistory, debts, invoiceCounter };
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `POS_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importBackupJSON(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (data.products && data.salesHistory && data.debts) {
+                        products = data.products;
+                        salesHistory = data.salesHistory;
+                        debts = data.debts;
+                        if (data.invoiceCounter) invoiceCounter = data.invoiceCounter;
+
+                        localStorage.setItem('products_db', JSON.stringify(products));
+                        localStorage.setItem('sales_db', JSON.stringify(salesHistory));
+                        localStorage.setItem('debts_db', JSON.stringify(debts));
+                        localStorage.setItem('invoice_counter', invoiceCounter);
+
+                        alert("داتا ب سەرکەفتن هاتنە گێڕانەڤە!");
+                        location.reload();
+                    } else { alert("فایلا هەڵبژارتی نەیێت درستە!"); }
+                } catch(err) { alert("خەلەتیەک چێبوو د خویندنا فایلێ دا!"); }
+            };
+            reader.readAsText(file);
         }
 
         function switchTab(tab) {
