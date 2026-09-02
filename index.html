@@ -21,6 +21,89 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: radial-gradient(circle at top right, #1e1b4b, #0f172a); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
 
+        /* --- Login Screen Styling --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            padding: 35px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .login-card .form-control {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            font-size: 14px;
+            margin-top: 5px;
+            outline: none;
+        }
+
+        .login-card input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-login {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* --- Main App Layout --- */
+        #app-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
         .sidebar { width: 280px; background: var(--card-bg); backdrop-filter: blur(12px); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
         .sidebar-top h2 { font-size: 20px; color: var(--accent-color); margin-bottom: 25px; text-align: center; }
 
@@ -30,6 +113,9 @@
         .rate-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 12px; border-radius: 12px; margin-top: 15px; }
         .rate-card label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 5px; }
         .rate-card input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; font-weight: bold; }
+
+        .btn-logout { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); margin-top: 15px; }
+        .btn-logout:hover { background: var(--danger); color: white; }
 
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .section { display: none; }
@@ -102,195 +188,213 @@
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-top">
-            <h2>سیستەمێ کاشێریێ</h2>
-            <button class="nav-btn active" onclick="switchTab('pos')">پشکا کاشێری (POS)</button>
-            <button class="nav-btn" onclick="checkAdmin()">پشکا رێڤەبەری (Dashboard)</button>
-        </div>
-
-        <div class="rate-card">
-            <label>نرخێ بورصێ (100$ ب IQD):</label>
-            <input type="number" id="usd-rate" value="150000" oninput="calculateChange()">
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>چوونەژووریا کاشێریێ</h2>
+            <p>تکایە ناڤ و پەیڤا نهێنی بنڤێسە دا بچی سەر وێبسایتی</p>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-control">
+                    <label>ناڤێ بەکارهێنەری (Username):</label>
+                    <input type="text" id="login-user" placeholder="admin" required autocomplete="off">
+                </div>
+                <div class="form-control">
+                    <label>پەیڤا نهێنی (Password):</label>
+                    <input type="password" id="login-pass" placeholder="••••" required>
+                </div>
+                <button type="submit" class="btn-login">چوونەژوور</button>
+            </form>
         </div>
     </div>
 
-    <div class="main-content">
-        <!-- 1. پشکا کاشێری (POS) -->
-        <div id="pos-tab" class="section active">
-            <div class="pos-grid">
-                <div class="products-section">
-                    <div class="search-box">
-                        <input type="text" id="search-input" placeholder="لێگەڕیان ب ناڤ یان بارکۆد..." onkeyup="handleSearch(event)">
-                        <button class="nav-btn" style="margin:0; width:auto;" onclick="openScanner()">کامێرا بارکۆد 📷</button>
-                    </div>
-                    <div class="products-cards" id="products-list"></div>
+    <div id="app-container" style="display: none;">
+        <div class="sidebar">
+            <div class="sidebar-top">
+                <h2>سیستەمێ کاشێریێ</h2>
+                <button class="nav-btn active" onclick="switchTab('pos')">پشکا کاشێری (POS)</button>
+                <button class="nav-btn" onclick="checkAdmin()">پشکا رێڤەبەری (Dashboard)</button>
+            </div>
+
+            <div>
+                <div class="rate-card">
+                    <label>نرخێ بورصێ (100$ ب IQD):</label>
+                    <input type="number" id="usd-rate" value="150000" oninput="calculateChange()">
                 </div>
-
-                <div class="cart-panel">
-                    <h3>سەبەتەیا فرۆشتنێ</h3>
-                    <div class="cart-items" id="cart-items"></div>
-                </div>
-
-                <div class="checkout-panel">
-                    <h3>زانیاریێن پارەدانێ</h3>
-                    
-                    <div style="margin-top: 15px;">
-                        <div class="payment-calc">
-                            <label style="font-size:11px;">داشکان (%):</label>
-                            <input type="number" id="cart-discount-percent" value="0" min="0" max="100" placeholder="نموونە: 20" oninput="updateCart()">
-                        </div>
-
-                        <div style="font-size: 16px; font-weight: bold; margin: 10px 0 4px 0;">
-                            کۆم ($): $<span id="cart-total-usd">0.00</span>
-                        </div>
-                        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">
-                            کۆم (دینار): <span id="cart-total-iqd">0</span> IQD
-                        </div>
-
-                        <div class="payment-calc">
-                            <label style="font-size:11px;">بڕا وەرگرتی ژ کریاری (دینار):</label>
-                            <input type="number" id="paid-iqd" placeholder="0" oninput="calculateChange()">
-                            <div style="font-size: 13px; font-weight: bold; color: var(--success); margin-top: 4px;">
-                                بەقیا (دینار): <span id="change-iqd">0</span> IQD
-                            </div>
-                        </div>
-
-                        <div style="margin: 10px 0;">
-                            <label style="font-size:11px; display:block; margin-bottom:4px;">شێوازێ چاپکرنێ:</label>
-                            <select id="print-format" style="width:100%; padding:8px; border-radius:8px; background:var(--bg-color); color:white; border:1px solid var(--border);">
-                                <option value="thermal">Thermal (80mm)</option>
-                                <option value="a4">A4 Paper</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button class="btn-checkout" onclick="checkout()">تەمامکرن & چاپکرن</button>
-                </div>
+                <button class="nav-btn btn-logout" onclick="logout()">دەرکەفتن 🚪</button>
             </div>
         </div>
 
-        <!-- 2. پشکا رێڤەبەری (Dashboard) -->
-        <div id="admin-tab" class="section">
-            <h2 style="margin-bottom: 15px;">داشبۆردا رێڤەبەری & جەردا دارایی</h2>
-            
-            <!-- فیڵتەرکرنا هەیڤانە و سالانە -->
-            <div class="filter-card">
-                <div>
-                    <label style="font-size:12px; display:block; margin-bottom:3px;">فیلتەرکرن ب گوێرەی:</label>
-                    <select id="filter-type" onchange="toggleFilterType()">
-                        <option value="all">هەموو دەمان (گشتی)</option>
-                        <option value="monthly">هەیڤانە (Monthly)</option>
-                        <option value="yearly">سالانە (Yearly)</option>
-                    </select>
-                </div>
-
-                <div id="monthly-select-group" style="display:none;">
-                    <label style="font-size:12px; display:block; margin-bottom:3px;">هەیڤ هەڵبژێرە:</label>
-                    <input type="month" id="filter-month" onchange="updateAdminStats()">
-                </div>
-
-                <div id="yearly-select-group" style="display:none;">
-                    <label style="font-size:12px; display:block; margin-bottom:3px;">سال بنڤێسە:</label>
-                    <input type="number" id="filter-year" placeholder="2026" style="width:100px;" oninput="updateAdminStats()">
-                </div>
-
-                <div style="margin-right:auto; align-self: flex-end;">
-                    <button class="btn-action btn-excel" onclick="exportToExcel()">
-                        📊 دابەزاندن بۆ ئێکستل (Export to Excel)
-                    </button>
-                </div>
-            </div>
-
-            <!-- ئەنجامێن جەردێ -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>کۆما فرۆشتنان</h3>
-                    <p id="total-sales">$0.00</p>
-                </div>
-                <div class="stat-card">
-                    <h3>کۆما تێچووی (کڕین)</h3>
-                    <p id="total-cost">$0.00</p>
-                </div>
-                <div class="stat-card">
-                    <h3>قازانجا پاقژ</h3>
-                    <p id="net-profit" style="color: var(--success);">$0.00</p>
-                </div>
-            </div>
-
-            <div class="admin-flex">
-                <div>
-                    <h3>لیستا کەلاپەلان & عەمبار</h3>
-                    <br>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>کەلاپەل</th>
-                                <th>عەمبار</th>
-                                <th>تێچوو ($)</th>
-                                <th>فرۆشتن ($)</th>
-                                <th>کردار</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-products-body"></tbody>
-                    </table>
-
-                    <h3>پاراستنا داتایان (Backup & Restore)</h3>
-                    <br>
-                    <button class="btn-action btn-sec" onclick="exportData()">داتایان دابەزێنە (Backup JSON)</button>
-                    <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
-                    <button class="btn-action btn-edit" onclick="document.getElementById('import-file').click()">داتایان بگەڕێنە (Restore JSON)</button>
-                </div>
-
-                <div>
-                    <h3 id="form-title">زێدەکرنا کەلاپەلەکێ نۆی</h3>
-                    <br>
-                    <form id="product-form" onsubmit="saveProduct(event)" style="background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
-                        <input type="hidden" id="edit-mode" value="false">
-                        <div class="form-control">
-                            <label>کۆدێ بارکۆدی:</label>
-                            <input type="text" id="prod-barcode" required placeholder="بارکۆدی سکان بکە">
+        <div class="main-content">
+            <div id="pos-tab" class="section active">
+                <div class="pos-grid">
+                    <div class="products-section">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="لێگەڕیان ب ناڤ یان بارکۆد..." onkeyup="handleSearch(event)">
+                            <button class="nav-btn" style="margin:0; width:auto;" onclick="openScanner()">کامێرا بارکۆد 📷</button>
                         </div>
-                        <div class="form-control">
-                            <label>ناڤێ کەلاپەلی:</label>
-                            <input type="text" id="prod-name" required>
-                        </div>
-                        <div class="form-control">
-                            <label>بڕ د عەمبارێ دا (Stock):</label>
-                            <input type="number" id="prod-stock" required value="10">
-                        </div>
+                        <div class="products-cards" id="products-list"></div>
+                    </div>
+
+                    <div class="cart-panel">
+                        <h3>سەبەتەیا فرۆشتنێ</h3>
+                        <div class="cart-items" id="cart-items"></div>
+                    </div>
+
+                    <div class="checkout-panel">
+                        <h3>زانیاریێن پارەدانێ</h3>
                         
-                        <div class="form-control">
-                            <label>بیهایێ کریارێ (تێچوو):</label>
-                            <div class="price-input-group">
-                                <input type="number" step="0.01" id="prod-cost" required>
-                                <select id="prod-cost-curr">
-                                    <option value="USD">دۆلار ($)</option>
-                                    <option value="IQD">دینار (IQD)</option>
+                        <div style="margin-top: 15px;">
+                            <div class="payment-calc">
+                                <label style="font-size:11px;">داشکان (%):</label>
+                                <input type="number" id="cart-discount-percent" value="0" min="0" max="100" placeholder="نموونە: 20" oninput="updateCart()">
+                            </div>
+
+                            <div style="font-size: 16px; font-weight: bold; margin: 10px 0 4px 0;">
+                                کۆم ($): $<span id="cart-total-usd">0.00</span>
+                            </div>
+                            <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">
+                                کۆم (دینار): <span id="cart-total-iqd">0</span> IQD
+                            </div>
+
+                            <div class="payment-calc">
+                                <label style="font-size:11px;">بڕا وەرگرتی ژ کریاری (دینار):</label>
+                                <input type="number" id="paid-iqd" placeholder="0" oninput="calculateChange()">
+                                <div style="font-size: 13px; font-weight: bold; color: var(--success); margin-top: 4px;">
+                                    بەقیا (دینار): <span id="change-iqd">0</span> IQD
+                                </div>
+                            </div>
+
+                            <div style="margin: 10px 0;">
+                                <label style="font-size:11px; display:block; margin-bottom:4px;">شێوازێ چاپکرنێ:</label>
+                                <select id="print-format" style="width:100%; padding:8px; border-radius:8px; background:var(--bg-color); color:white; border:1px solid var(--border);">
+                                    <option value="thermal">Thermal (80mm)</option>
+                                    <option value="a4">A4 Paper</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="form-control">
-                            <label>بیهایێ فرۆشتنێ:</label>
-                            <div class="price-input-group">
-                                <input type="number" step="0.01" id="prod-price" required>
-                                <select id="prod-price-curr">
-                                    <option value="USD">دۆلار ($)</option>
-                                    <option value="IQD">دینار (IQD)</option>
-                                </select>
-                            </div>
-                        </div>
+                        <button class="btn-checkout" onclick="checkout()">تەمامکرن & چاپکرن</button>
+                    </div>
+                </div>
+            </div>
 
-                        <button type="submit" id="btn-submit-prod" class="btn-checkout" style="background: var(--accent-color);">زێدەبکە</button>
-                        <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="btn-checkout" style="background: var(--text-muted); display:none; margin-top:5px;">پەشیمانبوونەوە</button>
-                    </form>
+            <div id="admin-tab" class="section">
+                <h2 style="margin-bottom: 15px;">داشبۆردا رێڤەبەری & جەردا دارایی</h2>
+                
+                <div class="filter-card">
+                    <div>
+                        <label style="font-size:12px; display:block; margin-bottom:3px;">فیلتەرکرن ب گوێرەی:</label>
+                        <select id="filter-type" onchange="toggleFilterType()">
+                            <option value="all">هەموو دەمان (گشتی)</option>
+                            <option value="monthly">هەیڤانە (Monthly)</option>
+                            <option value="yearly">سالانە (Yearly)</option>
+                        </select>
+                    </div>
+
+                    <div id="monthly-select-group" style="display:none;">
+                        <label style="font-size:12px; display:block; margin-bottom:3px;">هەیڤ هەڵبژێرە:</label>
+                        <input type="month" id="filter-month" onchange="updateAdminStats()">
+                    </div>
+
+                    <div id="yearly-select-group" style="display:none;">
+                        <label style="font-size:12px; display:block; margin-bottom:3px;">سال بنڤێسە:</label>
+                        <input type="number" id="filter-year" placeholder="2026" style="width:100px;" oninput="updateAdminStats()">
+                    </div>
+
+                    <div style="margin-right:auto; align-self: flex-end;">
+                        <button class="btn-action btn-excel" onclick="exportToExcel()">
+                            📊 دابەزاندن بۆ ئێکستل (Export to Excel)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>کۆما فرۆشتنان</h3>
+                        <p id="total-sales">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>کۆما تێچووی (کڕین)</h3>
+                        <p id="total-cost">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>قازانجا پاقژ</h3>
+                        <p id="net-profit" style="color: var(--success);">$0.00</p>
+                    </div>
+                </div>
+
+                <div class="admin-flex">
+                    <div>
+                        <h3>لیستا کەلاپەلان & عەمبار</h3>
+                        <br>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>کەلاپەل</th>
+                                    <th>عەمبار</th>
+                                    <th>تێچوو ($)</th>
+                                    <th>فرۆشتن ($)</th>
+                                    <th>کردار</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-products-body"></tbody>
+                        </table>
+
+                        <h3>پاراستنا داتایان (Backup & Restore)</h3>
+                        <br>
+                        <button class="btn-action btn-sec" onclick="exportData()">داتایان دابەزێنە (Backup JSON)</button>
+                        <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
+                        <button class="btn-action btn-edit" onclick="document.getElementById('import-file').click()">داتایان بگەڕێنە (Restore JSON)</button>
+                    </div>
+
+                    <div>
+                        <h3 id="form-title">زێدەکرنا کەلاپەلەکێ نۆی</h3>
+                        <br>
+                        <form id="product-form" onsubmit="saveProduct(event)" style="background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--border);">
+                            <input type="hidden" id="edit-mode" value="false">
+                            <div class="form-control">
+                                <label>کۆدێ بارکۆدی:</label>
+                                <input type="text" id="prod-barcode" required placeholder="بارکۆدی سکان بکە">
+                            </div>
+                            <div class="form-control">
+                                <label>ناڤێ کەلاپەلی:</label>
+                                <input type="text" id="prod-name" required>
+                            </div>
+                            <div class="form-control">
+                                <label>بڕ د عەمبارێ دا (Stock):</label>
+                                <input type="number" id="prod-stock" required value="10">
+                            </div>
+                            
+                            <div class="form-control">
+                                <label>بیهایێ کریارێ (تێچوو):</label>
+                                <div class="price-input-group">
+                                    <input type="number" step="0.01" id="prod-cost" required>
+                                    <select id="prod-cost-curr">
+                                        <option value="USD">دۆلار ($)</option>
+                                        <option value="IQD">دینار (IQD)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-control">
+                                <label>بیهایێ فرۆشتنێ:</label>
+                                <div class="price-input-group">
+                                    <input type="number" step="0.01" id="prod-price" required>
+                                    <select id="prod-price-curr">
+                                        <option value="USD">دۆلار ($)</option>
+                                        <option value="IQD">دینار (IQD)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btn-submit-prod" class="btn-checkout" style="background: var(--accent-color);">زێدەبکە</button>
+                            <button type="button" id="btn-cancel-edit" onclick="resetForm()" class="btn-checkout" style="background: var(--text-muted); display:none; margin-top:5px;">پەشیمانبوونەوە</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scanner Modal -->
     <div id="scanner-modal">
         <div class="scanner-box">
             <h3>سکانکرنا بارکۆدی</h3>
@@ -300,7 +404,6 @@
         </div>
     </div>
 
-    <!-- Receipt Print -->
     <div id="receipt-print" style="display: none;">
         <h2 style="text-align: center;">پسۆلا مارکێتێ</h2>
         <p id="receipt-date" style="text-align:center; font-size:11px;"></p>
@@ -313,6 +416,35 @@
     </div>
 
     <script>
+        // --- 🔐 LOGIN LOGIC ---
+        const USERNAME_DB = "admin";
+        const PASSWORD_DB = "1234";
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+
+            if (u === USERNAME_DB && p === PASSWORD_DB) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                showApp();
+            } else {
+                alert("ناڤێ بەکارهێنەری یان پەیڤا نهێنی شاشە!");
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            renderProducts();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+
+        // --- POS & DATA LOGIC ---
         let products = JSON.parse(localStorage.getItem('products_db')) || [
             { barcode: '1001', name: 'ئاڤ (0.5L)', cost: 0.15, price: 0.25, stock: 50, sold: 0 },
             { barcode: '1002', name: 'چبس لایز', cost: 0.35, price: 0.50, stock: 4, sold: 0 }
@@ -324,6 +456,7 @@
 
         function renderProducts(items = products) {
             const container = document.getElementById('products-list');
+            if(!container) return;
             container.innerHTML = '';
             items.forEach(p => {
                 const isOutOfStock = p.stock <= 0;
@@ -487,8 +620,6 @@
             alert("فرۆشتن ب سەرکەفتیانە تەمام بوو!");
         }
 
-        // --- بەشێ نوو: جەردا هەیڤانە و سالانە & دابەزاندن ب شێوەیێ Excel ---
-
         function toggleFilterType() {
             const type = document.getElementById('filter-type').value;
             document.getElementById('monthly-select-group').style.display = type === 'monthly' ? 'block' : 'none';
@@ -514,7 +645,7 @@
                 const date = new Date(s.timestamp);
 
                 if (type === 'monthly') {
-                    const selectedMonth = document.getElementById('filter-month').value; // YYYY-MM
+                    const selectedMonth = document.getElementById('filter-month').value; 
                     if (!selectedMonth) return true;
                     const [year, month] = selectedMonth.split('-');
                     return date.getFullYear() == year && (date.getMonth() + 1) == parseInt(month);
@@ -563,8 +694,7 @@
             const filteredSales = getFilteredSales();
             if (filteredSales.length === 0) return alert("هیچ داتایەک نینە بۆ ناردن دیارکری ب ڤی فیلتەری!");
 
-            // ئامادەکرنا ناوەرۆکا فایلا CSV/Excel
-            let csvContent = "\uFEFF"; // UTF-8 BOM دا کو پیتێن کوردی/عەرەبی تێک نەچن
+            let csvContent = "\uFEFF"; 
             csvContent += "Barcode,Item Name,Quantity,Cost ($),Sales ($),Profit ($),Date\n";
 
             filteredSales.forEach(s => {
@@ -585,8 +715,6 @@
             link.click();
             document.body.removeChild(link);
         }
-
-        // --- بەشێن دیترێن ڕێڤەبەریێ ---
 
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ products, salesHistory }));
@@ -732,8 +860,11 @@
             updateAdminStats();
         }
 
+        // AUTO-CHECK LOGIN ON PAGE LOAD
         window.onload = function() {
-            renderProducts();
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                showApp();
+            }
         };
     </script>
 </body>
