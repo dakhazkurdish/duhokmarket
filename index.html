@@ -49,9 +49,30 @@
 
         /* POS UI */
         .pos-grid { display: grid; grid-template-columns: 1.8fr 1.1fr 1.1fr; gap: 15px; height: calc(100vh - 40px); }
-        .products-section { display: flex; flex-direction: column; gap: 12px; }
+        .products-section { display: flex; flex-direction: column; gap: 10px; }
         .search-box { display: flex; gap: 10px; }
         .search-box input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; font-size: 16px; }
+        
+        /* Refund Box in POS */
+        .pos-refund-box {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 8px 12px;
+            border-radius: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .pos-refund-box input {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            font-size: 13px;
+        }
+
         .currency-switch { display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); }
         .currency-switch select { background: var(--bg-color); color: white; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-weight: bold; }
 
@@ -59,7 +80,7 @@
         .cat-btn { padding: 6px 12px; border-radius: 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; white-space: nowrap; font-size: 13px; }
         .cat-btn.active { background: var(--accent-color); color: white; }
 
-        .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 250px); padding-left: 5px; }
+        .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 290px); padding-left: 5px; }
         .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
         .product-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
         .product-card.out-of-stock { opacity: 0.4; border-color: var(--danger); pointer-events: none; }
@@ -194,6 +215,13 @@
                             <input type="text" id="search-input" placeholder="لێگەڕیان (F2)..." onkeyup="handleSearch(event)">
                             <button class="nav-btn" style="width:auto; margin:0;" onclick="openScanner()">📷</button>
                         </div>
+
+                        <!-- RETURN / REFUND BAR MOVED TO CASHIER (POS) -->
+                        <div class="pos-refund-box">
+                            <span style="font-size:12px; font-weight:bold; color:var(--danger); white-space:nowrap;">🔄 گێڕانەڤە:</span>
+                            <input type="text" id="refund-invoice-input" placeholder="ژمارەیا پسۆلێ بنڤێسە (INV-0001)...">
+                            <button class="btn-action btn-delete" style="padding:6px 12px; font-size:12px;" onclick="processRefund()">گێڕانەڤە</button>
+                        </div>
                         
                         <div class="currency-switch">
                             <span style="font-size:13px; font-weight:bold;">دراڤێ دیارکرنێ (Currency):</span>
@@ -272,15 +300,6 @@
             <div id="admin-tab" class="section">
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
-
-                <!-- REFUND / RETURN SECTION -->
-                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 14px; margin-bottom: 20px;">
-                    <h3 style="color:var(--danger); margin-bottom:8px;">🔄 گێڕانەڤەیا فرۆشتنان (Return / Refund)</h3>
-                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                        <input type="text" id="refund-invoice-input" placeholder="ژمارەیا پسۆلێ بنڤێسە (ملا: INV-0001)..." style="flex:1; min-width:220px; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--bg-color); color:white;">
-                        <button class="btn-action btn-delete" style="padding:9px 15px; font-size:13px;" onclick="processRefund()">گێڕانەڤە و هەڵوەشاندن</button>
-                    </div>
-                </div>
 
                 <div class="filter-card">
                     <label>فیلتەرکرنا راپۆرتان ب بەروار:</label>
@@ -613,7 +632,6 @@
             updateCart();
         }
 
-        // خالا ٢: سڕینەوەیا تاکەکەسی ژ سەبەتێ
         function removeFromCart(index) {
             cart.splice(index, 1);
             updateCart();
@@ -791,7 +809,7 @@
             renderProducts();
         }
 
-        // خالا ١: گێڕانەڤە و هەڵوەشاندنا پسۆلێ
+        // RETURN / REFUND FUNCTION
         function processRefund() {
             const invNum = document.getElementById('refund-invoice-input').value.trim().toUpperCase();
             if (!invNum) return alert("تکایە ژمارەیا پسۆلێ بنڤێسە!");
@@ -799,9 +817,8 @@
             const matchingSales = salesHistory.filter(s => s.invoiceNum === invNum);
             if (matchingSales.length === 0) return alert("چ فرۆشتن ب ڤێ ژمارەیا پسۆلێ نەهاتنە دیتن!");
 
-            if (!confirm(`ئەرێ تۆ پشتڕاستی ژ گێڕانەڤەیا پسۆلا (${invNum})؟\nکەلاپەل دێ زڤڕنە عەمباری و پارە دێ هێتە کێمکرن.`)) return;
+            if (!confirm(`ئەرێ تۆ پشتڕاستی ژ گێڕانەڤەیا پسۆلا (${invNum})؟\nکەلاپەل دێ زڤڕنە عەمباری و فرۆشتن دێ هێتە هەلوەشاندن.`)) return;
 
-            // زڤڕاندنا کەلاپەلان بۆ عەمباری
             matchingSales.forEach(item => {
                 const p = products.find(prod => prod.barcode === item.barcode);
                 if (p) {
@@ -809,7 +826,6 @@
                 }
             });
 
-            // لادان ژ مێژوویا فرۆشتنان
             salesHistory = salesHistory.filter(s => s.invoiceNum !== invNum);
 
             localStorage.setItem('products_db', JSON.stringify(products));
@@ -820,7 +836,6 @@
             updateAllDisplays();
         }
 
-        // خالا ٣: زێدەکرنا بارێ نوی ب بلەزی (Quick Restock)
         function quickRestock(barcode) {
             const p = products.find(prod => prod.barcode === barcode);
             if (!p) return;
@@ -910,7 +925,6 @@
             });
         }
 
-        // خالا ٤: سنورێ دیارکری یێ کێمبوونێ ل دیف هەر کەلاپەلەکی
         function checkLowStock() {
             const lowStockList = products.filter(p => {
                 const minAlert = p.minStock !== undefined ? p.minStock : 5;
