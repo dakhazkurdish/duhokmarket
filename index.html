@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستەمێ کاشێریێ یێ پێشکەفتی یێ گشتی</title>
-    <!-- HTML5 QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
@@ -49,15 +48,18 @@
 
         /* POS UI */
         .pos-grid { display: grid; grid-template-columns: 1.8fr 1.1fr 1.1fr; gap: 15px; height: calc(100vh - 40px); }
-        .products-section { display: flex; flex-direction: column; gap: 15px; }
+        .products-section { display: flex; flex-direction: column; gap: 12px; }
         .search-box { display: flex; gap: 10px; }
         .search-box input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15, 23, 42, 0.6); color: white; font-size: 16px; }
+
+        .currency-switch { display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); }
+        .currency-switch select { background: var(--bg-color); color: white; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-weight: bold; }
 
         .cat-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
         .cat-btn { padding: 6px 12px; border-radius: 20px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; white-space: nowrap; font-size: 13px; }
         .cat-btn.active { background: var(--accent-color); color: white; }
 
-        .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 210px); padding-left: 5px; }
+        .products-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: calc(100vh - 250px); padding-left: 5px; }
         .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
         .product-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
         .product-card.out-of-stock { opacity: 0.5; border-color: var(--danger); }
@@ -110,7 +112,6 @@
 </head>
 <body>
 
-    <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-card">
             <h2>چوونەژووریا کاشێریێ</h2>
@@ -123,7 +124,6 @@
         </div>
     </div>
 
-    <!-- MAIN CONTAINER -->
     <div id="app-container" style="display: none;">
         <div class="sidebar">
             <div class="sidebar-top">
@@ -134,14 +134,13 @@
             <div>
                 <div class="rate-card">
                     <label style="font-size: 11px;">100$ ب IQD:</label>
-                    <input type="number" id="usd-rate" value="150000" oninput="calculateChange()">
+                    <input type="number" id="usd-rate" value="150000" oninput="updateAllDisplays()">
                 </div>
                 <button class="nav-btn btn-logout" onclick="logout()" style="margin-top:10px;">دەرکەفتن 🚪</button>
             </div>
         </div>
 
         <div class="main-content">
-            <!-- POS TAB -->
             <div id="pos-tab" class="section active">
                 <div class="pos-grid">
                     <div class="products-section">
@@ -150,7 +149,14 @@
                             <button class="nav-btn" style="width:auto; margin:0;" onclick="openScanner()">📷</button>
                         </div>
                         
-                        <!-- CATEGORY FILTER BAR -->
+                        <div class="currency-switch">
+                            <span style="font-size:13px; font-weight:bold;">دراڤێ دیارکرنێ (Currency):</span>
+                            <select id="currency-select" onchange="updateAllDisplays()">
+                                <option value="IQD" selected>دینار (IQD)</option>
+                                <option value="USD">دۆلار (USD)</option>
+                            </select>
+                        </div>
+
                         <div class="cat-bar" id="category-bar"></div>
 
                         <div class="products-cards" id="products-list"></div>
@@ -168,13 +174,12 @@
                                 <label style="font-size:11px;">داشکان (%):</label>
                                 <input type="number" id="cart-discount-percent" value="0" oninput="updateCart()">
                             </div>
-                            <div style="font-weight: bold; margin-top:5px;">کۆم ($): $<span id="cart-total-usd">0.00</span></div>
-                            <div style="font-size: 12px; color: var(--text-muted);">کۆم (IQD): <span id="cart-total-iqd">0</span></div>
+                            <div style="font-weight: bold; margin-top:5px; font-size:16px; color:var(--success);">کۆم: <span id="cart-total-primary">0</span></div>
 
                             <div class="payment-calc">
-                                <label style="font-size:11px;">وەرگرتی (IQD):</label>
-                                <input type="number" id="paid-iqd" oninput="calculateChange()">
-                                <div style="font-size:12px; color:var(--success); margin-top:3px;">بەقیا: <span id="change-iqd">0</span> IQD</div>
+                                <label style="font-size:11px;">وەرگرتی (پارێ وەرگرتی):</label>
+                                <input type="number" id="paid-amount" oninput="calculateChange()">
+                                <div style="font-size:12px; color:var(--success); margin-top:3px;">بەقیا: <span id="change-amount">0</span></div>
                             </div>
                         </div>
 
@@ -184,18 +189,16 @@
                 </div>
             </div>
 
-            <!-- ADMIN TAB -->
             <div id="admin-tab" class="section">
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
                 <div class="stats-grid">
-                    <div class="stat-card"><h3>کۆما فرۆشتنان</h3><p id="total-sales">$0.00</p></div>
-                    <div class="stat-card"><h3>کۆما تێچووی</h3><p id="total-cost">$0.00</p></div>
-                    <div class="stat-card"><h3>قازانجا پاقژ</h3><p id="net-profit" style="color:var(--success);">$0.00</p></div>
-                    <div class="stat-card"><h3>کۆما قەرزان</h3><p id="total-debts" style="color:var(--warning);">$0.00</p></div>
+                    <div class="stat-card"><h3>کۆما فرۆشتنان</h3><p id="total-sales">0</p></div>
+                    <div class="stat-card"><h3>کۆما تێچووی</h3><p id="total-cost">0</p></div>
+                    <div class="stat-card"><h3>قازانجا پاقژ</h3><p id="net-profit" style="color:var(--success);">0</p></div>
+                    <div class="stat-card"><h3>کۆما قەرزان</h3><p id="total-debts" style="color:var(--warning);">0</p></div>
                 </div>
 
-                <!-- DEBT MANAGEMENT -->
                 <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
                     <h3>لیستا قەرزداران</h3>
                     <br>
@@ -203,7 +206,7 @@
                         <thead>
                             <tr>
                                 <th>کریار</th>
-                                <th>بڕێ قەرزی ($)</th>
+                                <th>بڕێ قەرزی</th>
                                 <th>بەروار</th>
                                 <th>بارودۆخ</th>
                                 <th>کردار</th>
@@ -224,7 +227,7 @@
                                     <th>کاتۆگۆری</th>
                                     <th>عەمبار</th>
                                     <th>بەسەرچوون</th>
-                                    <th>نرخ ($)</th>
+                                    <th>نرخ</th>
                                     <th>کردار</th>
                                 </tr>
                             </thead>
@@ -236,7 +239,6 @@
                         <h3 id="form-title">زێدەکرنا کەلاپەلی</h3>
                         <br>
                         <form id="product-form" onsubmit="saveProduct(event)" style="background: var(--card-bg); padding: 15px; border-radius: 12px;">
-                            <input type="hidden" id="edit-mode" value="false">
                             <div class="form-control">
                                 <label>بارکۆد:</label>
                                 <input type="text" id="prod-barcode" required>
@@ -263,12 +265,12 @@
                                 <input type="date" id="prod-expiry">
                             </div>
                             <div class="form-control">
-                                <label>تێچوو ($):</label>
-                                <input type="number" step="0.01" id="prod-cost" required>
+                                <label>تێچوو ب دینار (IQD):</label>
+                                <input type="number" id="prod-cost" required placeholder="ملا: 250">
                             </div>
                             <div class="form-control">
-                                <label>فرۆشتن ($):</label>
-                                <input type="number" step="0.01" id="prod-price" required>
+                                <label>فرۆشتن ب دینار (IQD):</label>
+                                <input type="number" id="prod-price" required placeholder="ملا: 500">
                             </div>
                             <button type="submit" class="btn-checkout">تۆمارکرن</button>
                         </form>
@@ -278,7 +280,6 @@
         </div>
     </div>
 
-    <!-- SCANNER MODAL -->
     <div id="scanner-modal">
         <div class="scanner-box">
             <h3>سکانکرن</h3>
@@ -287,7 +288,6 @@
         </div>
     </div>
 
-    <!-- PRINT RECEIPT -->
     <div id="receipt-print" style="display: none;">
         <h3 style="text-align: center;">پسۆلا فرۆشتنێ</h3>
         <p id="receipt-invoice-num" style="text-align:center; font-weight:bold;"></p>
@@ -295,11 +295,9 @@
         <hr style="margin: 5px 0;">
         <div id="receipt-items"></div>
         <hr style="margin: 5px 0;">
-        <h4 id="receipt-total-usd"></h4>
-        <h4 id="receipt-total-iqd"></h4>
+        <h4 id="receipt-total"></h4>
     </div>
 
-    <!-- LOGIC -->
     <script>
         let storedUser = localStorage.getItem('app_username') || "admin";
         let storedPass = localStorage.getItem('app_password') || "1234";
@@ -307,9 +305,10 @@
         let invoiceCounter = parseInt(localStorage.getItem('invoice_counter')) || 1;
         let selectedCategory = "هەموو";
 
+        // Stores Prices in IQD natively
         let products = JSON.parse(localStorage.getItem('products_db')) || [
-            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 0.15, price: 0.25, stock: 40, expiry: '2026-12-01' },
-            { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 0.35, price: 0.50, stock: 5, expiry: '2026-09-20' }
+            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 250, price: 500, stock: 40, expiry: '2026-12-01' },
+            { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 500, price: 750, stock: 15, expiry: '2026-09-20' }
         ];
 
         let cart = [];
@@ -328,6 +327,24 @@
                 checkout(false);
             }
         });
+
+        function getCurrentCurrency() {
+            return document.getElementById('currency-select').value;
+        }
+
+        function getExchangeRate() {
+            return parseFloat(document.getElementById('usd-rate').value) || 150000;
+        }
+
+        function formatPrice(amountInIQD) {
+            const curr = getCurrentCurrency();
+            if (curr === 'USD') {
+                const usd = amountInIQD / (getExchangeRate() / 100);
+                return `$${usd.toFixed(2)}`;
+            } else {
+                return `${Math.round(amountInIQD).toLocaleString()} IQD`;
+            }
+        }
 
         function handleLogin(e) {
             e.preventDefault();
@@ -389,7 +406,7 @@
                     <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''} ${expWarning ? 'exp-warning' : ''}" onclick="addToCart('${p.barcode}')">
                         <h4>${p.name}</h4>
                         <div style="font-size:11px; color:var(--text-muted);">${p.stock} دانە</div>
-                        <div class="price">$${p.price.toFixed(2)}</div>
+                        <div class="price">${formatPrice(p.price)}</div>
                         ${expWarning ? `<div class="exp-tag">⚠️ نزیک بەسەرچوون</div>` : ''}
                     </div>
                 `;
@@ -417,7 +434,7 @@
                 subtotal += item.price * item.qty;
                 container.innerHTML += `
                     <div class="cart-item">
-                        <div><strong>${item.name}</strong><br><small>$${item.price.toFixed(2)}</small></div>
+                        <div><strong>${item.name}</strong><br><small>${formatPrice(item.price)}</small></div>
                         <div>
                             <button class="btn-qty" onclick="changeQty(${index}, -1)">-</button>
                             <span>${item.qty}</span>
@@ -430,7 +447,7 @@
             const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
             const finalTotal = Math.max(0, subtotal - (subtotal * discount / 100));
 
-            document.getElementById('cart-total-usd').innerText = finalTotal.toFixed(2);
+            document.getElementById('cart-total-primary').innerText = formatPrice(finalTotal);
             calculateChange();
         }
 
@@ -444,15 +461,30 @@
         }
 
         function calculateChange() {
-            const totalUSD = parseFloat(document.getElementById('cart-total-usd').innerText) || 0;
-            const rate100 = parseFloat(document.getElementById('usd-rate').value) || 150000;
-            const paidIQD = parseFloat(document.getElementById('paid-iqd').value) || 0;
+            let subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+            const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
+            const finalTotalIQD = Math.max(0, subtotal - (subtotal * discount / 100));
 
-            const totalIQD = (totalUSD / 100) * rate100;
-            document.getElementById('cart-total-iqd').innerText = Math.round(totalIQD).toLocaleString();
+            const paidAmount = parseFloat(document.getElementById('paid-amount').value) || 0;
+            const curr = getCurrentCurrency();
 
-            const change = paidIQD - totalIQD;
-            document.getElementById('change-iqd').innerText = change > 0 ? Math.round(change).toLocaleString() : '0';
+            let change = 0;
+            if (curr === 'USD') {
+                const finalTotalUSD = finalTotalIQD / (getExchangeRate() / 100);
+                change = paidAmount - finalTotalUSD;
+                document.getElementById('change-amount').innerText = change > 0 ? `$${change.toFixed(2)}` : '$0.00';
+            } else {
+                change = paidAmount - finalTotalIQD;
+                document.getElementById('change-amount').innerText = change > 0 ? `${Math.round(change).toLocaleString()} IQD` : '0 IQD';
+            }
+        }
+
+        function updateAllDisplays() {
+            renderProducts();
+            updateCart();
+            if (document.getElementById('admin-tab').classList.contains('active')) {
+                updateAdminStats();
+            }
         }
 
         function handleSearch(e) {
@@ -473,7 +505,10 @@
                 if (!customerName) return;
             }
 
-            let totalUSD = parseFloat(document.getElementById('cart-total-usd').innerText) || 0;
+            let subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+            const discount = parseFloat(document.getElementById('cart-discount-percent').value) || 0;
+            const finalTotalIQD = Math.max(0, subtotal - (subtotal * discount / 100));
+
             const formattedInvoiceNum = "INV-" + String(invoiceCounter).padStart(4, '0');
             invoiceCounter++;
             localStorage.setItem('invoice_counter', invoiceCounter);
@@ -490,11 +525,11 @@
                     date: new Date().toLocaleString()
                 });
 
-                receiptHTML += `<p>${item.name} x${item.qty} - $${(item.price * item.qty).toFixed(2)}</p>`;
+                receiptHTML += `<p>${item.name} x${item.qty} - ${formatPrice(item.price * item.qty)}</p>`;
             });
 
             if (isDebt) {
-                debts.push({ id: Date.now(), customer: customerName, amountUSD: totalUSD, date: new Date().toLocaleString(), status: 'Unpaid' });
+                debts.push({ id: Date.now(), customer: customerName, amountIQD: finalTotalIQD, date: new Date().toLocaleString(), status: 'Unpaid' });
                 localStorage.setItem('debts_db', JSON.stringify(debts));
             }
 
@@ -504,12 +539,12 @@
             document.getElementById('receipt-invoice-num').innerText = "ژمارەیا پسۆلێ: " + formattedInvoiceNum;
             document.getElementById('receipt-date').innerText = new Date().toLocaleString();
             document.getElementById('receipt-items').innerHTML = receiptHTML;
-            document.getElementById('receipt-total-usd').innerText = "کۆم: $" + totalUSD.toFixed(2);
+            document.getElementById('receipt-total').innerText = "کۆم: " + formatPrice(finalTotalIQD);
 
             window.print();
 
             cart = [];
-            document.getElementById('paid-iqd').value = '';
+            document.getElementById('paid-amount').value = '';
             updateCart();
             renderProducts();
         }
@@ -517,12 +552,12 @@
         function updateAdminStats() {
             let sales = 0, cost = 0;
             salesHistory.forEach(s => { sales += s.price; cost += s.cost; });
-            let totalDebtSum = debts.filter(d => d.status === 'Unpaid').reduce((acc, d) => acc + d.amountUSD, 0);
+            let totalDebtSum = debts.filter(d => d.status === 'Unpaid').reduce((acc, d) => acc + d.amountIQD, 0);
 
-            document.getElementById('total-sales').innerText = `$${sales.toFixed(2)}`;
-            document.getElementById('total-cost').innerText = `$${cost.toFixed(2)}`;
-            document.getElementById('net-profit').innerText = `$${(sales - cost).toFixed(2)}`;
-            document.getElementById('total-debts').innerText = `$${totalDebtSum.toFixed(2)}`;
+            document.getElementById('total-sales').innerText = formatPrice(sales);
+            document.getElementById('total-cost').innerText = formatPrice(cost);
+            document.getElementById('net-profit').innerText = formatPrice(sales - cost);
+            document.getElementById('total-debts').innerText = formatPrice(totalDebtSum);
 
             renderDebts();
 
@@ -535,7 +570,7 @@
                         <td>${p.category || 'گشتی'}</td>
                         <td>${p.stock}</td>
                         <td>${p.expiry || '-'}</td>
-                        <td>$${p.price.toFixed(2)}</td>
+                        <td>${formatPrice(p.price)}</td>
                         <td><button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button></td>
                     </tr>
                 `;
@@ -549,7 +584,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${d.customer}</td>
-                        <td>$${d.amountUSD.toFixed(2)}</td>
+                        <td>${formatPrice(d.amountIQD)}</td>
                         <td>${d.date}</td>
                         <td>${d.status === 'Paid' ? 'داندریا' : 'نەدایە'}</td>
                         <td>
@@ -566,10 +601,16 @@
         function payPartialDebt(id) {
             const d = debts.find(debt => debt.id === id);
             if (d) {
-                let pay = parseFloat(prompt(`بڕێ دانى بنڤێسە (کۆما قەرزی: $${d.amountUSD.toFixed(2)}):`));
-                if (pay && pay > 0 && pay <= d.amountUSD) {
-                    d.amountUSD -= pay;
-                    if (d.amountUSD === 0) d.status = 'Paid';
+                let pay = parseFloat(prompt(`بڕێ دانى بنڤێسە (کۆما قەرزی: ${formatPrice(d.amountIQD)}):\n* تێبینی: ب گوێرەی دراڤێ نوکە هەڵبژارتی (IQD/USD) بنڤێسە.`));
+                const curr = getCurrentCurrency();
+                let payInIQD = pay;
+                if (curr === 'USD') {
+                    payInIQD = pay * (getExchangeRate() / 100);
+                }
+
+                if (payInIQD && payInIQD > 0 && payInIQD <= d.amountIQD) {
+                    d.amountIQD -= payInIQD;
+                    if (d.amountIQD <= 0) d.status = 'Paid';
                     localStorage.setItem('debts_db', JSON.stringify(debts));
                     updateAdminStats();
                 }
@@ -578,7 +619,7 @@
 
         function payFullDebt(id) {
             const d = debts.find(debt => debt.id === id);
-            if (d) { d.amountUSD = 0; d.status = 'Paid'; localStorage.setItem('debts_db', JSON.stringify(debts)); updateAdminStats(); }
+            if (d) { d.amountIQD = 0; d.status = 'Paid'; localStorage.setItem('debts_db', JSON.stringify(debts)); updateAdminStats(); }
         }
 
         function saveProduct(e) {
