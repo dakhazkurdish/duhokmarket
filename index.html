@@ -73,10 +73,15 @@
         th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { background: rgba(15, 23, 42, 0.8); }
 
-        .btn-action { padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; color: white; font-size: 12px; }
+        .btn-action { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 13px; transition: 0.2s; }
         .btn-delete { background: var(--danger); }
         .btn-edit { background: var(--warning); margin-left: 4px; }
         .btn-sec { background: var(--accent-color); }
+        .btn-excel { background: #107c41; font-weight: bold; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-excel:hover { background: #0b5a2f; }
+
+        .filter-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filter-card select, .filter-card input { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: white; }
 
         .form-control { margin-bottom: 10px; }
         .form-control label { display: block; margin-bottom: 3px; font-size: 13px; }
@@ -111,9 +116,9 @@
     </div>
 
     <div class="main-content">
+        <!-- 1. پشکا کاشێری (POS) -->
         <div id="pos-tab" class="section active">
             <div class="pos-grid">
-                <!-- ١. پشکا لێگەڕیان و کەلاپەلان -->
                 <div class="products-section">
                     <div class="search-box">
                         <input type="text" id="search-input" placeholder="لێگەڕیان ب ناڤ یان بارکۆد..." onkeyup="handleSearch(event)">
@@ -122,13 +127,11 @@
                     <div class="products-cards" id="products-list"></div>
                 </div>
 
-                <!-- ٢. پشکا تەڕخانکری تەنێ بۆ سەبەتا کەلاپەلان -->
                 <div class="cart-panel">
                     <h3>سەبەتەیا فرۆشتنێ</h3>
                     <div class="cart-items" id="cart-items"></div>
                 </div>
 
-                <!-- ٣. پشکا جوداکری بۆ حسابکرن و ڕاپەراندنا پارەدانێ -->
                 <div class="checkout-panel">
                     <h3>زانیاریێن پارەدانێ</h3>
                     
@@ -167,16 +170,46 @@
             </div>
         </div>
 
+        <!-- 2. پشکا رێڤەبەری (Dashboard) -->
         <div id="admin-tab" class="section">
-            <h2 style="margin-bottom: 20px;">داشبۆردا رێڤەبەری & زانیاریێن دارایی</h2>
+            <h2 style="margin-bottom: 15px;">داشبۆردا رێڤەبەری & جەردا دارایی</h2>
             
+            <!-- فیڵتەرکرنا هەیڤانە و سالانە -->
+            <div class="filter-card">
+                <div>
+                    <label style="font-size:12px; display:block; margin-bottom:3px;">فیلتەرکرن ب گوێرەی:</label>
+                    <select id="filter-type" onchange="toggleFilterType()">
+                        <option value="all">هەموو دەمان (گشتی)</option>
+                        <option value="monthly">هەیڤانە (Monthly)</option>
+                        <option value="yearly">سالانە (Yearly)</option>
+                    </select>
+                </div>
+
+                <div id="monthly-select-group" style="display:none;">
+                    <label style="font-size:12px; display:block; margin-bottom:3px;">هەیڤ هەڵبژێرە:</label>
+                    <input type="month" id="filter-month" onchange="updateAdminStats()">
+                </div>
+
+                <div id="yearly-select-group" style="display:none;">
+                    <label style="font-size:12px; display:block; margin-bottom:3px;">سال بنڤێسە:</label>
+                    <input type="number" id="filter-year" placeholder="2026" style="width:100px;" oninput="updateAdminStats()">
+                </div>
+
+                <div style="margin-right:auto; align-self: flex-end;">
+                    <button class="btn-action btn-excel" onclick="exportToExcel()">
+                        📊 دابەزاندن بۆ ئێکستل (Export to Excel)
+                    </button>
+                </div>
+            </div>
+
+            <!-- ئەنجامێن جەردێ -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>کۆما فرۆشتنان</h3>
                     <p id="total-sales">$0.00</p>
                 </div>
                 <div class="stat-card">
-                    <h3>کۆما تێچووی</h3>
+                    <h3>کۆما تێچووی (کڕین)</h3>
                     <p id="total-cost">$0.00</p>
                 </div>
                 <div class="stat-card">
@@ -204,9 +237,9 @@
 
                     <h3>پاراستنا داتایان (Backup & Restore)</h3>
                     <br>
-                    <button class="btn-action btn-sec" onclick="exportData()">داتایان دابەزێنە (Backup)</button>
+                    <button class="btn-action btn-sec" onclick="exportData()">داتایان دابەزێنە (Backup JSON)</button>
                     <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
-                    <button class="btn-action btn-edit" onclick="document.getElementById('import-file').click()">داتایان بگەڕێنە (Restore)</button>
+                    <button class="btn-action btn-edit" onclick="document.getElementById('import-file').click()">داتایان بگەڕێنە (Restore JSON)</button>
                 </div>
 
                 <div>
@@ -257,6 +290,7 @@
         </div>
     </div>
 
+    <!-- Scanner Modal -->
     <div id="scanner-modal">
         <div class="scanner-box">
             <h3>سکانکرنا بارکۆدی</h3>
@@ -266,6 +300,7 @@
         </div>
     </div>
 
+    <!-- Receipt Print -->
     <div id="receipt-print" style="display: none;">
         <h2 style="text-align: center;">پسۆلا مارکێتێ</h2>
         <p id="receipt-date" style="text-align:center; font-size:11px;"></p>
@@ -394,6 +429,7 @@
 
             let totalUSD = parseFloat(document.getElementById('cart-total-usd').innerText) || 0;
             let receiptHTML = '';
+            const now = new Date();
 
             cart.forEach(item => {
                 const pIndex = products.findIndex(p => p.barcode === item.barcode);
@@ -408,7 +444,9 @@
                     qty: item.qty,
                     cost: item.cost * item.qty,
                     price: item.price * item.qty,
-                    date: new Date().toLocaleString()
+                    profit: (item.price - item.cost) * item.qty,
+                    timestamp: now.toISOString(),
+                    date: now.toLocaleString()
                 });
 
                 receiptHTML += `<p>${item.name} (x${item.qty}) - $${(item.price * item.qty).toFixed(2)}</p>`;
@@ -422,7 +460,7 @@
             const paidIQD = parseFloat(document.getElementById('paid-iqd').value) || 0;
             const changeIQD = paidIQD - totalIQD;
 
-            document.getElementById('receipt-date').innerText = "دەم: " + new Date().toLocaleString();
+            document.getElementById('receipt-date').innerText = "دەم: " + now.toLocaleString();
             document.getElementById('receipt-items').innerHTML = receiptHTML;
             document.getElementById('receipt-total-usd').innerText = "کۆما گشتی ($): $" + totalUSD.toFixed(2);
             document.getElementById('receipt-total-iqd').innerText = "کۆما گشتی (IQD): " + Math.round(totalIQD).toLocaleString() + " IQD";
@@ -448,6 +486,107 @@
             renderProducts();
             alert("فرۆشتن ب سەرکەفتیانە تەمام بوو!");
         }
+
+        // --- بەشێ نوو: جەردا هەیڤانە و سالانە & دابەزاندن ب شێوەیێ Excel ---
+
+        function toggleFilterType() {
+            const type = document.getElementById('filter-type').value;
+            document.getElementById('monthly-select-group').style.display = type === 'monthly' ? 'block' : 'none';
+            document.getElementById('yearly-select-group').style.display = type === 'yearly' ? 'block' : 'none';
+
+            if (type === 'monthly' && !document.getElementById('filter-month').value) {
+                const now = new Date();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                document.getElementById('filter-month').value = `${now.getFullYear()}-${m}`;
+            }
+            if (type === 'yearly' && !document.getElementById('filter-year').value) {
+                document.getElementById('filter-year').value = new Date().getFullYear();
+            }
+
+            updateAdminStats();
+        }
+
+        function getFilteredSales() {
+            const type = document.getElementById('filter-type').value;
+
+            return salesHistory.filter(s => {
+                if (!s.timestamp) return type === 'all';
+                const date = new Date(s.timestamp);
+
+                if (type === 'monthly') {
+                    const selectedMonth = document.getElementById('filter-month').value; // YYYY-MM
+                    if (!selectedMonth) return true;
+                    const [year, month] = selectedMonth.split('-');
+                    return date.getFullYear() == year && (date.getMonth() + 1) == parseInt(month);
+                } else if (type === 'yearly') {
+                    const selectedYear = document.getElementById('filter-year').value;
+                    if (!selectedYear) return true;
+                    return date.getFullYear() == selectedYear;
+                }
+                return true;
+            });
+        }
+
+        function updateAdminStats() {
+            const filteredSales = getFilteredSales();
+
+            let sales = 0, cost = 0;
+            filteredSales.forEach(s => { 
+                sales += s.price; 
+                cost += s.cost; 
+            });
+
+            document.getElementById('total-sales').innerText = `$${sales.toFixed(2)}`;
+            document.getElementById('total-cost').innerText = `$${cost.toFixed(2)}`;
+            document.getElementById('net-profit').innerText = `$${(sales - cost).toFixed(2)}`;
+
+            const tbody = document.getElementById('admin-products-body');
+            tbody.innerHTML = '';
+
+            products.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.name}</td>
+                        <td>${p.stock}</td>
+                        <td>$${p.cost.toFixed(2)}</td>
+                        <td>$${p.price.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editProduct('${p.barcode}')">دەستکاری</button>
+                            <button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function exportToExcel() {
+            const filteredSales = getFilteredSales();
+            if (filteredSales.length === 0) return alert("هیچ داتایەک نینە بۆ ناردن دیارکری ب ڤی فیلتەری!");
+
+            // ئامادەکرنا ناوەرۆکا فایلا CSV/Excel
+            let csvContent = "\uFEFF"; // UTF-8 BOM دا کو پیتێن کوردی/عەرەبی تێک نەچن
+            csvContent += "Barcode,Item Name,Quantity,Cost ($),Sales ($),Profit ($),Date\n";
+
+            filteredSales.forEach(s => {
+                const profit = s.profit !== undefined ? s.profit : (s.price - s.cost);
+                csvContent += `"${s.barcode}","${s.name}",${s.qty},${s.cost.toFixed(2)},${s.price.toFixed(2)},${profit.toFixed(2)},"${s.date}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            const filterType = document.getElementById('filter-type').value;
+            let fileName = `Jard_Sales_${filterType}_${new Date().toISOString().slice(0,10)}.csv`;
+
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- بەشێن دیترێن ڕێڤەبەریێ ---
 
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ products, salesHistory }));
@@ -554,33 +693,6 @@
             document.getElementById('btn-cancel-edit').style.display = "none";
         }
 
-        function updateAdminStats() {
-            let sales = 0, cost = 0;
-            salesHistory.forEach(s => { sales += s.price; cost += s.cost; });
-
-            document.getElementById('total-sales').innerText = `$${sales.toFixed(2)}`;
-            document.getElementById('total-cost').innerText = `$${cost.toFixed(2)}`;
-            document.getElementById('net-profit').innerText = `$${(sales - cost).toFixed(2)}`;
-
-            const tbody = document.getElementById('admin-products-body');
-            tbody.innerHTML = '';
-
-            products.forEach(p => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${p.name}</td>
-                        <td>${p.stock}</td>
-                        <td>$${p.cost.toFixed(2)}</td>
-                        <td>$${p.price.toFixed(2)}</td>
-                        <td>
-                            <button class="btn-action btn-edit" onclick="editProduct('${p.barcode}')">دەستکاری</button>
-                            <button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
         function saveProduct(e) {
             e.preventDefault();
             const isEdit = document.getElementById('edit-mode').value === "true";
@@ -620,7 +732,6 @@
             updateAdminStats();
         }
 
-        // رێندەرکرنا دەستپێکی د دەمێ ڤەکرنا پەڕەی دا
         window.onload = function() {
             renderProducts();
         };
