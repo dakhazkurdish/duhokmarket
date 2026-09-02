@@ -266,7 +266,7 @@
                 </div>
             </div>
 
-            <!-- 3. ADMIN TAB (WITH SETTINGS INSIDE) -->
+            <!-- 3. ADMIN TAB (WITH SETTINGS EMBEDDED) -->
             <div id="admin-tab" class="section">
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
@@ -1023,11 +1023,36 @@
         }
 
         function exportSalesToExcel() {
-            let csv = "ژمارەیا پسۆلێ,کەلاپەل,ژمارە,تێچوو (IQD),فرۆشتن (IQD),بەروار\n";
-            filterSalesByDate().forEach(s => {
-                csv += `"${s.invoiceNum}","${s.name}",${s.qty},${s.cost},${s.price},"${s.date}"\n`;
+            const filteredSales = filterSalesByDate();
+
+            if (filteredSales.length === 0) {
+                return alert("چ فرۆشتن د ڤی بەروارێ دیارکری دا نینن!");
+            }
+
+            let csv = "ژمارەیا پسۆلێ,کەلاپەل,ژمارە,کۆما تێچووی (کرین IQD),کۆما فرۆشتنێ (IQD),قازانج (IQD),بەروار\n";
+
+            let totalCostSum = 0;
+            let totalPriceSum = 0;
+            let totalProfitSum = 0;
+            let totalItemsQty = 0;
+
+            filteredSales.forEach(s => {
+                const itemCost = s.cost || 0;
+                const itemPrice = s.price || 0;
+                const itemProfit = itemPrice - itemCost;
+
+                totalCostSum += itemCost;
+                totalPriceSum += itemPrice;
+                totalProfitSum += itemProfit;
+                totalItemsQty += (s.qty || 0);
+
+                csv += `"${s.invoiceNum}","${s.name}",${s.qty},${itemCost},${itemPrice},${itemProfit},"${s.date}"\n`;
             });
-            downloadCSV(csv, `Sales_Report_${new Date().toISOString().slice(0,10)}.csv`);
+
+            csv += `\n`;
+            csv += `"کۆما گشتی","--",${totalItemsQty},${totalCostSum},${totalPriceSum},${totalProfitSum},"خلاسبوو"\n`;
+
+            downloadCSV(csv, `Sales_Report_${new Date().toISOString().slice(0, 10)}.csv`);
         }
 
         function exportProductsToExcel() {
