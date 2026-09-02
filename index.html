@@ -72,6 +72,7 @@
         .cart-items { flex: 1; overflow-y: auto; margin-top: 10px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(15, 23, 42, 0.4); border-radius: 10px; margin-bottom: 8px; }
         .btn-qty { background: var(--accent-color); color: white; border: none; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; }
+        .btn-remove-item { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; width: 24px; height: 24px; cursor: pointer; font-weight: bold; margin-right: 5px; }
         .btn-clear-cart { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 5px 8px; border-radius: 6px; font-size: 12px; cursor: pointer; }
 
         .checkout-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -92,10 +93,11 @@
         th, td { padding: 10px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { background: rgba(15, 23, 42, 0.8); }
 
-        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-size: 12px; margin-left: 2px; }
+        .btn-action { padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; color: white; font-size: 11px; margin-left: 2px; }
         .btn-delete { background: var(--danger); }
         .btn-edit { background: var(--warning); color: black; font-weight: bold; }
         .btn-sec { background: var(--accent-color); }
+        .btn-stock { background: #0284c7; }
         .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
 
         .form-control { margin-bottom: 12px; }
@@ -266,10 +268,19 @@
                 </div>
             </div>
 
-            <!-- 3. ADMIN TAB (WITH SETTINGS EMBEDDED) -->
+            <!-- 3. ADMIN TAB -->
             <div id="admin-tab" class="section">
                 <h2>داشبۆردا رێڤەبەری</h2>
                 <br>
+
+                <!-- REFUND / RETURN SECTION -->
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 14px; margin-bottom: 20px;">
+                    <h3 style="color:var(--danger); margin-bottom:8px;">🔄 گێڕانەڤەیا فرۆشتنان (Return / Refund)</h3>
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <input type="text" id="refund-invoice-input" placeholder="ژمارەیا پسۆلێ بنڤێسە (ملا: INV-0001)..." style="flex:1; min-width:220px; padding:9px; border-radius:8px; border:1px solid var(--border); background:var(--bg-color); color:white;">
+                        <button class="btn-action btn-delete" style="padding:9px 15px; font-size:13px;" onclick="processRefund()">گێڕانەڤە و هەڵوەشاندن</button>
+                    </div>
+                </div>
 
                 <div class="filter-card">
                     <label>فیلتەرکرنا راپۆرتان ب بەروار:</label>
@@ -297,7 +308,7 @@
                 </div>
 
                 <div class="warning-box" id="low-stock-box" style="display:none;">
-                    <h3 style="color:var(--warning);">⚠️ ئاگەهداری: کەلاپەلێن بەر ب کێمبوونێ دچن (ژ ٥ دانەیان کێمتر)</h3>
+                    <h3 style="color:var(--warning);">⚠️ ئاگەهداری: کەلاپەلێن بەر ب کێمبوونێ دچن (ل ژێر سنورێ دیارکری)</h3>
                     <ul id="low-stock-list" style="margin-right:20px; margin-top:8px;"></ul>
                 </div>
 
@@ -315,6 +326,7 @@
                                     <th>ناڤ</th>
                                     <th>کاتۆگۆری</th>
                                     <th>عەمبار</th>
+                                    <th>سنور</th>
                                     <th>بەسەرچوون</th>
                                     <th>نرخ</th>
                                     <th>کردار</th>
@@ -347,8 +359,12 @@
                                 </select>
                             </div>
                             <div class="form-control">
-                                <label>عەمبار:</label>
+                                <label>عەمبار (هژمارا نوکە):</label>
                                 <input type="number" id="prod-stock" required value="10">
+                            </div>
+                            <div class="form-control">
+                                <label>سنورێ کێمبوونێ (ئاگەهداری دەمێ بوو ئەڤ هژمارە):</label>
+                                <input type="number" id="prod-min-stock" required value="5">
                             </div>
                             <div class="form-control">
                                 <label>بەروارێ بەسەرچوونێ:</label>
@@ -447,8 +463,8 @@
         let selectedCategory = "هەموو";
 
         let products = JSON.parse(localStorage.getItem('products_db')) || [
-            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 250, price: 500, stock: 4, expiry: '2026-12-01' },
-            { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 500, price: 750, stock: 15, expiry: '2026-09-20' }
+            { barcode: '1001', name: 'ئاڤ 0.5L', category: 'ڤەخوارن', cost: 250, price: 500, stock: 4, minStock: 5, expiry: '2026-12-01' },
+            { barcode: '1002', name: 'چبس لایز', category: 'خوارن', cost: 500, price: 750, stock: 15, minStock: 5, expiry: '2026-09-20' }
         ];
 
         let cart = [];
@@ -514,7 +530,6 @@
             }
         }
 
-        // LOAD AND SAVE SETTINGS INSIDE ADMIN
         function loadSettings() {
             document.getElementById('setting-user').value = storedUser;
             document.getElementById('setting-pass').value = storedPass;
@@ -598,6 +613,12 @@
             updateCart();
         }
 
+        // خالا ٢: سڕینەوەیا تاکەکەسی ژ سەبەتێ
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
         function updateCart() {
             const container = document.getElementById('cart-items');
             container.innerHTML = '';
@@ -607,11 +628,15 @@
                 subtotal += (item.price || 0) * item.qty;
                 container.innerHTML += `
                     <div class="cart-item">
-                        <div><strong>${item.name}</strong><br><small>${formatPrice(item.price || 0)}</small></div>
                         <div>
+                            <strong>${item.name}</strong><br>
+                            <small>${formatPrice(item.price || 0)}</small>
+                        </div>
+                        <div style="display:flex; align-items:center;">
                             <button class="btn-qty" onclick="changeQty(${index}, -1)">-</button>
-                            <span style="margin:0 5px;">${item.qty}</span>
+                            <span style="margin:0 6px; font-weight:bold;">${item.qty}</span>
                             <button class="btn-qty" onclick="changeQty(${index}, 1)">+</button>
+                            <button class="btn-remove-item" onclick="removeFromCart(${index})" title="لادان ژ سەبەتێ">✕</button>
                         </div>
                     </div>
                 `;
@@ -766,6 +791,51 @@
             renderProducts();
         }
 
+        // خالا ١: گێڕانەڤە و هەڵوەشاندنا پسۆلێ
+        function processRefund() {
+            const invNum = document.getElementById('refund-invoice-input').value.trim().toUpperCase();
+            if (!invNum) return alert("تکایە ژمارەیا پسۆلێ بنڤێسە!");
+
+            const matchingSales = salesHistory.filter(s => s.invoiceNum === invNum);
+            if (matchingSales.length === 0) return alert("چ فرۆشتن ب ڤێ ژمارەیا پسۆلێ نەهاتنە دیتن!");
+
+            if (!confirm(`ئەرێ تۆ پشتڕاستی ژ گێڕانەڤەیا پسۆلا (${invNum})؟\nکەلاپەل دێ زڤڕنە عەمباری و پارە دێ هێتە کێمکرن.`)) return;
+
+            // زڤڕاندنا کەلاپەلان بۆ عەمباری
+            matchingSales.forEach(item => {
+                const p = products.find(prod => prod.barcode === item.barcode);
+                if (p) {
+                    p.stock += item.qty;
+                }
+            });
+
+            // لادان ژ مێژوویا فرۆشتنان
+            salesHistory = salesHistory.filter(s => s.invoiceNum !== invNum);
+
+            localStorage.setItem('products_db', JSON.stringify(products));
+            localStorage.setItem('sales_db', JSON.stringify(salesHistory));
+
+            document.getElementById('refund-invoice-input').value = '';
+            alert(`پسۆلا (${invNum}) ب سەرکەفتیانە هاتە گێڕانەڤە!`);
+            updateAllDisplays();
+        }
+
+        // خالا ٣: زێدەکرنا بارێ نوی ب بلەزی (Quick Restock)
+        function quickRestock(barcode) {
+            const p = products.find(prod => prod.barcode === barcode);
+            if (!p) return;
+
+            const addQtyStr = prompt(`چەند دانەیێن نوی ل عەمبارێ کەلاپەلێ (${p.name}) زێدە دکەی؟\n(هژمارا نوکە: ${p.stock})`);
+            const addQty = parseInt(addQtyStr);
+
+            if (addQty && addQty > 0) {
+                p.stock += addQty;
+                localStorage.setItem('products_db', JSON.stringify(products));
+                alert(`هژمارا (${addQty}) دانەیان ل کەلاپەلێ (${p.name}) هاتنە زێدەکرن.\nکۆما نوکە: ${p.stock}`);
+                updateAllDisplays();
+            }
+        }
+
         function toggleCustomDates() {
             const filterType = document.getElementById('report-filter-type').value;
             document.getElementById('custom-date-inputs').style.display = filterType === 'custom' ? 'flex' : 'none';
@@ -820,14 +890,17 @@
             const tbody = document.getElementById('admin-products-body');
             tbody.innerHTML = '';
             products.forEach(p => {
+                const minS = p.minStock !== undefined ? p.minStock : 5;
                 tbody.innerHTML += `
                     <tr>
-                        <td>${p.name}</td>
+                        <td><strong>${p.name}</strong></td>
                         <td>${p.category || 'گشتی'}</td>
-                        <td>${p.stock}</td>
+                        <td style="${p.stock <= minS ? 'color:var(--danger); font-weight:bold;' : ''}">${p.stock}</td>
+                        <td style="color:var(--text-muted);">${minS}</td>
                         <td>${p.expiry || '-'}</td>
                         <td>${formatPrice(p.price || 0)}</td>
                         <td>
+                            <button class="btn-action btn-stock" onclick="quickRestock('${p.barcode}')" title="بارکرنا عەمباری">📦 زێدەکرن</button>
                             <button class="btn-action btn-sec" onclick="openBarcodeModal('${p.barcode}')">🏷️ بارکۆد</button>
                             <button class="btn-action btn-edit" onclick="editProduct('${p.barcode}')">دەستکاری</button>
                             <button class="btn-action btn-delete" onclick="deleteProduct('${p.barcode}')">سڕینەوە</button>
@@ -837,14 +910,21 @@
             });
         }
 
+        // خالا ٤: سنورێ دیارکری یێ کێمبوونێ ل دیف هەر کەلاپەلەکی
         function checkLowStock() {
-            const lowStockList = products.filter(p => p.stock < 5);
+            const lowStockList = products.filter(p => {
+                const minAlert = p.minStock !== undefined ? p.minStock : 5;
+                return p.stock <= minAlert;
+            });
             const box = document.getElementById('low-stock-box');
             const list = document.getElementById('low-stock-list');
 
             if (lowStockList.length > 0) {
                 box.style.display = 'block';
-                list.innerHTML = lowStockList.map(p => `<li><strong>${p.name}</strong> - تەنێ (${p.stock}) دانە ماینە!</li>`).join('');
+                list.innerHTML = lowStockList.map(p => {
+                    const minAlert = p.minStock !== undefined ? p.minStock : 5;
+                    return `<li><strong>${p.name}</strong> - (${p.stock}) دانە ماینە! (سنورێ هۆشداریێ: ${minAlert})</li>`;
+                }).join('');
             } else {
                 box.style.display = 'none';
             }
@@ -952,6 +1032,7 @@
             document.getElementById('prod-name').value = p.name;
             document.getElementById('prod-category').value = p.category;
             document.getElementById('prod-stock').value = p.stock;
+            document.getElementById('prod-min-stock').value = p.minStock !== undefined ? p.minStock : 5;
             document.getElementById('prod-expiry').value = p.expiry || '';
             document.getElementById('prod-cost').value = p.cost;
             document.getElementById('prod-price').value = p.price;
@@ -977,6 +1058,7 @@
             const name = document.getElementById('prod-name').value.trim();
             const category = document.getElementById('prod-category').value;
             const stock = parseInt(document.getElementById('prod-stock').value);
+            const minStock = parseInt(document.getElementById('prod-min-stock').value) || 5;
             const expiry = document.getElementById('prod-expiry').value;
             const cost = parseFloat(document.getElementById('prod-cost').value);
             const price = parseFloat(document.getElementById('prod-price').value);
@@ -985,12 +1067,12 @@
                 if (products.some(p => p.barcode === barcode)) {
                     return alert("ئەڤ بارکۆدە یێ بەری نوکە هەی! بارکۆدەکێ دی بکاربینە.");
                 }
-                products.push({ barcode, name, category, stock, expiry, cost, price });
+                products.push({ barcode, name, category, stock, minStock, expiry, cost, price });
                 alert("کەلاپەل ب سەرکەفتیانە هاتە زێدەکرن!");
             } else {
                 const idx = products.findIndex(p => p.barcode === editBarcode);
                 if (idx !== -1) {
-                    products[idx] = { barcode: editBarcode, name, category, stock, expiry, cost, price };
+                    products[idx] = { barcode: editBarcode, name, category, stock, minStock, expiry, cost, price };
                     alert("زانیاری هاتنە نویکردنەوە!");
                 }
             }
@@ -1056,9 +1138,9 @@
         }
 
         function exportProductsToExcel() {
-            let csv = "بارکۆد,ناڤ,کاتۆگۆری,عەمبار,تێچوو (IQD),فرۆشتن (IQD),بەسەرچوون\n";
+            let csv = "بارکۆد,ناڤ,کاتۆگۆری,عەمبار,سنورێ ئاگەهداریێ,تێچوو (IQD),فرۆشتن (IQD),بەسەرچوون\n";
             products.forEach(p => {
-                csv += `"${p.barcode}","${p.name}","${p.category || 'گشتی'}",${p.stock},${p.cost},${p.price},"${p.expiry || ''}"\n`;
+                csv += `"${p.barcode}","${p.name}","${p.category || 'گشتی'}",${p.stock},${p.minStock !== undefined ? p.minStock : 5},${p.cost},${p.price},"${p.expiry || ''}"\n`;
             });
             downloadCSV(csv, `Inventory_${new Date().toISOString().slice(0,10)}.csv`);
         }
